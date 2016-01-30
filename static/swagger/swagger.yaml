@@ -1,0 +1,666 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: ElasticSearch Authentication and Authorization Proxy REST API
+  description: |
+    This is the ElasticSearch AA Proxy REST API documentation.
+    ui jui jui
+host: localhost:9000
+basePath: /elaap/api/v1
+schemes:
+  - http
+  - http
+tags:
+  - name: Authenticate
+    description: Authentication Related Stuff
+  - name: Permissions
+    description: Permission Related Stuff
+  - name: Roles
+    description: Role Related Stuff
+  - name: Users
+    description: User Related Stuff
+
+paths:
+  '/authenticate':
+    delete:
+      tags:
+        - Authenticate
+      description: |
+        Delete current authentication token
+    post:
+      tags:
+        - Authenticate
+      description: |
+        Authenticate user and return authentication token
+      parameters:
+        - name: credentials
+          in: body
+          description: 'Authentication credentials'
+          schema:
+            $ref: '#/definitions/Authenticate:POST'
+      responses:
+        '201':
+          description: 'Authentication Token'
+          schema:
+            $ref: '#/definitions/Authenticate:POST:result'
+        '400':
+          description: 'One or More paramters are invalid'
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: 'Invalid authentication information, or valid authentication token present'
+          schema:
+            $ref: '#/definitions/Error'
+  '/permissions/{permission}':
+    get:
+      tags:
+        - Permissions
+      description: 'Get all matching permissions'
+      parameters:
+        - name: permission
+          in: path
+          description: 'Permissions object id'
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 'Permission Object'
+          schema:
+            $ref: '#/definitions/Permission:GET'
+        '403':
+          description: 'Insuffiecient permission'
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - Permissions
+      description: |
+        Update existing Permissions.
+      parameters:
+        - name: permission
+          in: path
+          description: 'Permissions object id'
+          required: true
+          type: string
+        - name: Role
+          in: body
+          description: JSON Document with attributes that should be updated
+          schema:
+            $ref: '#/definitions/Permission:PUT'
+      responses:
+        '200':
+          description: Role Object
+          schema:
+            $ref: '#/definitions/Permission:GET'
+        '403':
+          description: Insufficient permission
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Permission not fount
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Permissions
+      description: |
+        Delete existing role.
+      parameters:
+        - name: permission
+          in: path
+          description: 'Permissions object id'
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Empty response on success
+        '403':
+          description: Insufficient permission
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Permission not fount
+          schema:
+            $ref: '#/definitions/Error'
+  '/permissions/_search':
+    get:
+      tags:
+        - Permissions
+      description: 'Get all matching Permissions'
+      parameters:
+        - name: _id
+          in: query
+          description: 'filter: comma seperated list of _ids, or regex'
+          required: false
+          type: string
+        - name: scope
+          in: query
+          description: 'filter: comma seperated list of scopes, or regex'
+          required: false
+          type: string
+        - name: permissions
+          in: query
+          description: 'filter: comma seperated list if permissions or regex'
+          required: false
+          type: string
+        - name: roles
+          in: query
+          description: 'filter: comma seperated list of roles or regex'
+          required: false
+          type: string
+      responses:
+        '200':
+          description: 'Permission Object'
+          schema:
+            $ref: '#/definitions/Permission:GETQ'
+        '403':
+          description: 'Insuffiecient permission'
+          schema:
+            $ref: '#/definitions/Error'
+  '/permissions':
+    post:
+      tags:
+        - Permissions
+      description: |
+        Create a new permission, there can only be one permission object
+        per user id / role id combination.
+      parameters:
+        - name: permission
+          in: body
+          description: The role JSON representation you want to create
+          schema:
+            $ref: '#/definitions/Permission:POST'
+      responses:
+        '201':
+          description: Created user object
+          schema:
+            $ref: '#/definitions/Permission:GET'
+        '400':
+          description: One or More paramters are invalid
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: Role with this ID already exists
+          schema:
+            $ref: '#/definitions/Error'
+  '/roles/{role}':
+    get:
+      tags:
+        - Roles
+      description: 'Get Role Object'
+      parameters:
+        - name: role
+          in: path
+          description: Role ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Role Object
+          schema:
+            $ref: '#/definitions/Role:GET'
+        '403':
+          description: Insuffiecient permission
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Role not found
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - Roles
+      description: |
+        Update existing role.
+      parameters:
+        - name: role
+          in: path
+          description: Role ID
+          required: true
+          type: string
+        - name: Role
+          in: body
+          description: JSON Document with attributes that should be updated
+          schema:
+            $ref: '#/definitions/Role:PUT'
+      responses:
+        '200':
+          description: Role Object
+          schema:
+            $ref: '#/definitions/Role:GET'
+        '403':
+          description: Insufficient permission
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Role not fount
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Roles
+      description: |
+        Delete existing role.
+      parameters:
+        - name: role
+          in: path
+          description: Role ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Empty response on success
+        '403':
+          description: Insufficient permission
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Role not fount
+          schema:
+            $ref: '#/definitions/Error'
+  '/roles/_search':
+    get:
+      tags:
+        - Roles
+      description: 'Get all matching Roles'
+      parameters:
+        - name: _id
+          in: query
+          description: 'filter: comma seperated list of _ids, or regex'
+          required: false
+          type: string
+        - name: users
+          in: query
+          description: 'filter: comma seperates list of users, or regex'
+          required: false
+          type: string
+      responses:
+        '200':
+          description: 'Roles Object'
+          schema:
+            $ref: '#/definitions/Role:GETQ'
+        '403':
+          description: 'Insuffiecient permission'
+          schema:
+            $ref: '#/definitions/Error'
+  '/roles':
+    post:
+      tags:
+        - Roles
+      description: |
+        Create a new role, roles must be unique.
+      parameters:
+        - name: role
+          in: body
+          description: The role JSON representation you want to create
+          schema:
+            $ref: '#/definitions/Role:POST'
+      responses:
+        '201':
+          description: Created user object
+          schema:
+            $ref: '#/definitions/Role:GET'
+        '400':
+          description: One or More paramters are invalid
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: Role with this ID already exists
+          schema:
+            $ref: '#/definitions/Error'
+  '/users/{user}':
+    get:
+      tags:
+        - Users
+      description: 'Get \n'
+      parameters:
+        - name: user
+          in: path
+          description: User ID
+          required: true
+          type: string
+        - name: f
+          in: query
+          description: Filter Attributes that should be retuned
+          required: false
+          type: string
+      responses:
+        '200':
+          description: User Object
+          schema:
+            $ref: '#/definitions/User:GET'
+        '403':
+          description: Insuffiecient permission
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - Users
+      description: |
+        Update existing user.
+      parameters:
+        - name: user
+          in: path
+          description: User ID
+          required: true
+          type: string
+        - name: User
+          in: body
+          description: JSON Document with attributes that should be updated
+          schema:
+            $ref: '#/definitions/User:PUT'
+      responses:
+        '200':
+          description: User Object
+          schema:
+            $ref: '#/definitions/User:GET'
+        '403':
+          description: Insufficient permission
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: User not fount
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Users
+      description: |
+        Delete existing user.
+      parameters:
+        - name: user
+          in: path
+          description: User ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Empty response on success
+        '403':
+          description: Insufficient permission
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: User not fount
+          schema:
+            $ref: '#/definitions/Error'
+
+  '/users/_search':
+    get:
+      tags:
+        - Users
+      description: 'Get all matching Users'
+      parameters:
+        - name: admin
+          in: query
+          description: 'boolean, if true, only return admin accounts'
+          required: false
+          type: boolean
+        - name: _id
+          in: query
+          description: 'filter: comma seperated list of _ids, or regex'
+          required: false
+          type: string
+        - name: f
+          in: query
+          description: Filter Attributes that should be retuned
+          required: false
+          type: string
+      responses:
+        '200':
+          description: 'Roles Object'
+          schema:
+            $ref: '#/definitions/User:GETQ'
+        '403':
+          description: 'Insuffiecient permission'
+          schema:
+            $ref: '#/definitions/Error'
+  '/users/_self':
+    delete:
+      tags:
+        - Users
+      description: |
+        Delete user resource executing this request
+      responses:
+        '200':
+          description: Empty response on success
+        '403':
+          description: Insufficient permission
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: User not fount
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      tags:
+        - Users
+      description: |
+        Return user resource, of the user executing this request.
+      responses:
+        '201':
+          description: Created user object
+          schema:
+            $ref: '#/definitions/User:GET'
+        '400':
+          description: One or More paramters are invalid
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: User with this ID already exists
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - Users
+      description: |
+        Update user resource of the user executing this request
+      parameters:
+        - name: user
+          in: body
+          description: The user JSON representation you want to create
+          schema:
+            $ref: '#/definitions/User:PUTSELF'
+      responses:
+        '201':
+          description: Created user object
+          schema:
+            $ref: '#/definitions/User:GET'
+        '400':
+          description: One or More paramters are invalid
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: User with this ID already exists
+          schema:
+            $ref: '#/definitions/Error'
+  '/users':
+    post:
+      tags:
+        - Users
+      description: |
+        Create a new user, user _id must be unique
+      parameters:
+        - name: user
+          in: body
+          description: The user JSON representation you want to create
+          schema:
+            $ref: '#/definitions/User:POST'
+      responses:
+        '201':
+          description: Created user object
+          schema:
+            $ref: '#/definitions/User:GET'
+        '400':
+          description: One or More paramters are invalid
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: User with this ID already exists
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  'Authenticate:POST':
+    type: object
+    properties:
+      user:
+        type: string
+      password:
+        type: string
+  'Authenticate:POST:result':
+    type: object
+    properties:
+      token:
+        type: string
+  'Permission:GET':
+    type: object
+    properties:
+      _id:
+        type: string
+      description:
+        type: string
+      permissions:
+        type: array
+        items: string
+      roles:
+        type: array
+        items: string
+      scope:
+        type: string
+  'Permission:GETQ':
+    type: object
+    properties:
+      results:
+        type: array
+        items:
+          $ref: '#/definitions/Permission:GET'
+  'Permission:POST':
+    type: object
+    properties:
+      _id:
+        type: string
+      description:
+        type: string
+      permissions:
+        type: array
+        items: string
+      roles:
+        type: array
+        items: string
+      scope:
+        type: string
+  'Permission:PUT':
+    type: object
+    properties:
+      description:
+        type: string
+      permissions:
+        type: array
+        items: string
+      roles:
+        type: array
+        items: string
+      scope:
+        type: string
+  'Error':
+    type: object
+    properties:
+      err:
+        type: string
+  'Role:GET':
+    type: object
+    properties:
+      _id:
+        type: string
+      description:
+        type: string
+      users:
+        type: array
+        items: string
+  'Role:GETQ':
+    type: object
+    properties:
+      results:
+        type: array
+        items:
+          $ref: '#/definitions/Role:GET'
+  'Role:POST':
+    type: object
+    properties:
+      _id:
+        type: string
+      description:
+        type: string
+      users:
+        type: array
+        items: string
+  'Role:PUT':
+    type: object
+    properties:
+      description:
+        type: string
+        required: false
+      users:
+        type: array
+        items: string
+  'User:GET':
+    type: object
+    properties:
+      _id:
+        type: string
+      admin:
+        type: boolean
+      email:
+        type: string
+      name:
+        type: string
+  'User:GETQ':
+    type: object
+    properties:
+      results:
+        type: array
+        items:
+          $ref: '#/definitions/User:GET'
+  'User:POST':
+    type: object
+    properties:
+      _id:
+        type: string
+      admin:
+        type: boolean
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+  'User:PUT':
+    type: object
+    properties:
+      admin:
+        type: boolean
+      email:
+        type: string
+        required: false
+      name:
+        type: string
+        required: false
+      password:
+        type: string
+        required: false
+  'User:PUTSELF':
+    type: object
+    properties:
+      email:
+        type: string
+        required: false
+      name:
+        type: string
+        required: false
+      password:
+        type: string
+        required: false
