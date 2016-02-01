@@ -25,11 +25,11 @@ def main():
     parser = argparse.ArgumentParser(description="ElasticSearch Authentication and Authorization Proxy")
 
     parser.add_argument("--cfg", dest="cfg", action="store",
-                        default="/etc/el_aap/rest.cfg",
+                        default="/etc/el_aap/el_aap.ini",
                         help="Full path to configuration")
 
     parser.add_argument("--pid", dest="pid", action="store",
-                        default="/var/run/el_aap/agent.pid",
+                        default="/var/run/el_aap/el_aap.pid",
                         help="Full path to PID file")
 
     parser.add_argument("--nodaemon", dest="nodaemon", action="store_true",

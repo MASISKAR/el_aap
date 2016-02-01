@@ -23,11 +23,11 @@ def main():
     parser = argparse.ArgumentParser(description="ElasticSearch Authentication and Authorization Proxy API")
 
     parser.add_argument("--cfg", dest="cfg", action="store",
-                        default="/etc/el_aapapi/rest.cfg",
+                        default="/etc/el_aap/el_aap_api.ini",
                         help="Full path to configuration")
 
     parser.add_argument("--pid", dest="pid", action="store",
-                        default="/var/run/el_aapapi/agent.pid",
+                        default="/var/run/el_aap/el_aap_api.pid",
                         help="Full path to PID file")
 
     parser.add_argument("--nodaemon", dest="nodaemon", action="store_true",
@@ -45,8 +45,11 @@ def main():
     devel_parser = subparsers.add_parser('devel', help='Start ElasticSearch Authentication and Authorization Proxy API in developement mode')
     devel_parser.set_defaults(method='devel')
 
-    devel_parser = subparsers.add_parser('indices', help='create indices and exit')
-    devel_parser.set_defaults(method='indices')
+    indicies_parser = subparsers.add_parser('indices', help='create indices and exit')
+    indicies_parser.set_defaults(method='indices')
+
+    admin_parser = subparsers.add_parser('create_admin', help='create default admin user')
+    admin_parser.set_defaults(method='create_admin')
 
     parsed_args = parser.parse_args()
 
@@ -81,6 +84,14 @@ def main():
             nodaemon=parsed_args.nodaemon
         )
         el_aapapi.manage_indices()
+
+    elif parsed_args.method == 'create_admin':
+        el_aapapi = ElasticSearchAAPAPI(
+            cfg=parsed_args.cfg,
+            pid=parsed_args.pid,
+            nodaemon=parsed_args.nodaemon
+        )
+        el_aapapi.create_admin()
 
 
 class ElasticSearchAAPAPI(object):
@@ -170,6 +181,22 @@ class ElasticSearchAAPAPI(object):
     @property
     def nodaemon(self):
         return self._nodaemon
+
+    def create_admin(self):
+        self.config.read_file(open(self._config_file))
+        self._setup_pools()
+        self._setup_colls()
+
+        admin = {
+            "_id": "default_admin",
+            "admin": True,
+            "email": "admin@example.com",
+            "name": "Default Admin User",
+            "password": "password"
+        }
+
+        users = Users(self._mongo_colls['users'])
+        users.create(admin)
 
     def manage_indices(self):
         self.config.read_file(open(self._config_file))
