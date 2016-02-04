@@ -10,7 +10,7 @@ def search(m_permissions, m_sessions, m_users):
     try:
         m_users.require_admin(m_sessions.get_user(request))
         result = m_permissions.search(
-            _id=request.query.get('_id', None),
+            _ids=request.query.get('_id', None),
             permissions=request.query.get('permissions', None),
             scope=request.query.get('scope', None),
             roles=request.query.get('roles', None),

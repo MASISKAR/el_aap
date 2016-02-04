@@ -75,38 +75,38 @@ class Roles(FilterMixIN, ProjectionMixIn):
 
         return self.get(role['_id'])
 
-    def delete(self, role):
+    def delete(self, _id):
         try:
-            self.validate.id(role)
+            self.validate.id(_id)
         except validation.ValidationError:
             raise MalformedResourceID
         try:
-            result = self._coll.delete_one(filter={'_id': role})
+            result = self._coll.delete_one(filter={'_id': _id})
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
         if result.deleted_count is 0:
-            raise ResourceNotFound(role)
+            raise ResourceNotFound(_id)
         return
 
-    def get(self, roles, fields=None):
+    def get(self, _id, fields=None):
         try:
-            self.validate.id(roles)
+            self.validate.id(_id)
         except validation.ValidationError:
             raise MalformedResourceID
         try:
             result = self._coll.find_one(
-                    filter={'_id': roles},
+                    filter={'_id': _id},
                     projection=self._projection(fields)
             )
             if result is None:
-                raise ResourceNotFound(roles)
+                raise ResourceNotFound(_id)
             return result
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
 
-    def search(self, _id=None, users=None, fields=None):
+    def search(self, _ids=None, users=None, fields=None):
         query = {}
-        self._filter_builder(query, '_id', _id, features=['re'])
+        self._filter_builder(query, '_id', _ids, features=['re'])
         self._filter_builder(query, 'users', users, features=['re'])
         try:
             result = []
@@ -119,9 +119,9 @@ class Roles(FilterMixIN, ProjectionMixIn):
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
 
-    def update(self, role, delta, chk_users):
+    def update(self, _id, delta, chk_users):
         try:
-            self.validate.id(role)
+            self.validate.id(_id)
         except validation.ValidationError:
             raise MalformedResourceID
         try:
@@ -138,7 +138,7 @@ class Roles(FilterMixIN, ProjectionMixIn):
             update['$set'][k] = v
         try:
             result = self._coll.find_one_and_update(
-                filter={'_id': role},
+                filter={'_id': _id},
                 update=update,
                 projection=self._projection(),
                 return_document=pymongo.ReturnDocument.AFTER
@@ -146,5 +146,5 @@ class Roles(FilterMixIN, ProjectionMixIn):
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
         if result is None:
-            raise ResourceNotFound(role)
+            raise ResourceNotFound(_id)
         return result

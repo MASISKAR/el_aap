@@ -108,38 +108,38 @@ class Users(FilterMixIN, ProjectionMixIn):
             raise MongoConnError(err)
         return self.get(user['_id'])
 
-    def delete(self, user):
+    def delete(self, _id):
         try:
-            self.validate.id(user)
+            self.validate.id(_id)
         except validation.ValidationError:
             raise MalformedResourceID
         try:
-            result = self._coll.delete_one(filter={'_id': user})
+            result = self._coll.delete_one(filter={'_id': _id})
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
         if result.deleted_count is 0:
-            raise ResourceNotFound(user)
+            raise ResourceNotFound(_id)
         return
 
-    def get(self, user, fields=None):
+    def get(self, _id, fields=None):
         try:
-            self.validate.id(user)
+            self.validate.id(_id)
         except validation.ValidationError:
             raise MalformedResourceID
         try:
             result = self._coll.find_one(
-                    filter={'_id': user},
+                    filter={'_id': _id},
                     projection=self._projection(fields)
             )
             if result is None:
-                raise ResourceNotFound(user)
+                raise ResourceNotFound(_id)
             return result
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
 
-    def is_admin(self, user):
-        user = self.get(user, fields='admin')
-        if not user['admin']:
+    def is_admin(self, _id):
+        _id = self.get(_id, fields='admin')
+        if not _id['admin']:
             return False
         else:
             return True
@@ -149,9 +149,9 @@ class Users(FilterMixIN, ProjectionMixIn):
         if not user['admin']:
             raise PermError
 
-    def search(self, _id=None, admin=None, fields=None):
+    def search(self, _ids=None, admin=None, fields=None):
         query = {}
-        self._filter_builder(query, '_id', _id, features=['re'])
+        self._filter_builder(query, '_id', _ids, features=['re'])
         self._filter_builder_boolean(query, 'admin', admin)
         try:
             result = []
@@ -164,9 +164,9 @@ class Users(FilterMixIN, ProjectionMixIn):
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
 
-    def update(self, user, delta):
+    def update(self, _id, delta):
         try:
-            self.validate.id(user)
+            self.validate.id(_id)
         except validation.ValidationError:
             raise MalformedResourceID
         try:
@@ -182,7 +182,7 @@ class Users(FilterMixIN, ProjectionMixIn):
             update['$set'][k] = v
         try:
             result = self._coll.find_one_and_update(
-                filter={'_id': user},
+                filter={'_id': _id},
                 update=update,
                 projection=self._projection(),
                 return_document=pymongo.ReturnDocument.AFTER
@@ -190,5 +190,5 @@ class Users(FilterMixIN, ProjectionMixIn):
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
         if result is None:
-            raise ResourceNotFound(user)
+            raise ResourceNotFound(_id)
         return result

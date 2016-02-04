@@ -91,39 +91,39 @@ class Permissions(FilterMixIN, ProjectionMixIn):
             raise MongoConnError(err)
         return self.get(permission['_id'])
 
-    def delete(self, permission):
+    def delete(self, _id):
         try:
-            self.validate.id(permission)
+            self.validate.id(_id)
         except validation.ValidationError:
             raise MalformedResourceID
         try:
-            result = self._coll.delete_one(filter={'_id': permission})
+            result = self._coll.delete_one(filter={'_id': _id})
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
         if result.deleted_count is 0:
-            raise ResourceNotFound(permission)
+            raise ResourceNotFound(_id)
         return
 
-    def get(self, permission, fields=None):
+    def get(self, _id, fields=None):
         try:
-            self.validate.id(permission)
+            self.validate.id(_id)
         except validation.ValidationError:
             raise MalformedResourceID
         try:
             result = self._coll.find_one(
-                filter={'_id': permission},
+                filter={'_id': _id},
                 projection=self._projection(fields)
             )
             if result is None:
-                raise ResourceNotFound(permission)
-            result['_id'] = permission
+                raise ResourceNotFound(_id)
+            result['_id'] = _id
             return result
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
 
-    def search(self, _id=None, scope=None, permissions=None, roles=None, fields=None):
+    def search(self, _ids=None, scope=None, permissions=None, roles=None, fields=None):
         query = {}
-        self._filter_builder(query, '_id', _id, features=['re'])
+        self._filter_builder(query, '_id', _ids, features=['re'])
         self._filter_builder(query, 'permissions', permissions, features=['re'], validator=self.validate.perms)
         self._filter_builder(query, 'scope', scope, features=['re'])
         self._filter_builder(query, 'roles', roles, features=['re'])
@@ -138,9 +138,9 @@ class Permissions(FilterMixIN, ProjectionMixIn):
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
 
-    def update(self, permission, delta, chk_roles):
+    def update(self, _id, delta, chk_roles):
         try:
-            self.validate.id(permission)
+            self.validate.id(_id)
         except validation.ValidationError:
             raise MalformedResourceID
         try:
@@ -154,7 +154,7 @@ class Permissions(FilterMixIN, ProjectionMixIn):
                 raise InvalidSelectors('some roles missing')
         try:
             result = self._coll.find_one_and_update(
-                filter={'_id': permission},
+                filter={'_id': _id},
                 update={'$set': delta},
                 projection=self._projection(),
                 return_document=pymongo.ReturnDocument.AFTER
@@ -162,6 +162,6 @@ class Permissions(FilterMixIN, ProjectionMixIn):
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
         if result is None:
-            raise ResourceNotFound(permission)
-        result['_id'] = permission
+            raise ResourceNotFound(_id)
+        result['_id'] = _id
         return result

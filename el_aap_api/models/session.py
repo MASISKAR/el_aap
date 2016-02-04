@@ -84,7 +84,7 @@ class Sessions(FilterMixIN, ProjectionMixIn):
                 raise TokenError
             if not pbkdf2_sha512.verify(token['token'], result['token']):
                 raise TokenError
-            self._coll.update_one(
+            self._coll.update(
                 filter={'_id': Binary(uuid.UUID(token['_id']).bytes, STANDARD)},
                 update={'$set': {'lastused': datetime.datetime.utcnow()}}
             )
@@ -110,34 +110,34 @@ class Sessions(FilterMixIN, ProjectionMixIn):
         }
         return result
 
-    def delete(self, session):
+    def delete(self, _id):
         try:
-            self.validate.id(session)
+            self.validate.id(_id)
         except validation.ValidationError:
             raise MalformedResourceID
         try:
-            result = self._coll.delete_one(filter={'_id': Binary(uuid.UUID(session).bytes, STANDARD)})
+            result = self._coll.delete_one(filter={'_id': Binary(uuid.UUID(_id).bytes, STANDARD)})
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
         if result.deleted_count is 0:
-            raise ResourceNotFound(session)
+            raise ResourceNotFound(_id)
         return
 
-    def get(self, session, fields=None):
+    def get(self, _id, fields=None):
         try:
-            self.validate.id(session)
+            self.validate.id(_id)
         except validation.ValidationError:
             raise MalformedResourceID
         try:
             result = self._coll.find_one(
                 {
-                    '_id': Binary(uuid.UUID(session).bytes, STANDARD)
+                    '_id': Binary(uuid.UUID(_id).bytes, STANDARD)
                 },
                 self._projection(fields)
             )
             if result is None:
-                raise ResourceNotFound(session)
-            result['_id'] = session
+                raise ResourceNotFound(_id)
+            result['_id'] = _id
             if 'lastused' in result:
                 result['lastused'] = str(result['lastused'])
             return result

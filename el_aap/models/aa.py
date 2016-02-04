@@ -76,7 +76,7 @@ class AuthenticationAuthorization(object):
                     cached.append(self.cache_permissions[permission])
             except KeyError:
                 non_cached.append(permission)
-        for permission in self.permissions.search(_id=non_cached, fields='_id,permissions,scope')['results']:
+        for permission in self.permissions.search(_ids=non_cached, fields='_id,permissions,scope')['results']:
             permission['re'] = re.compile('^'+permission['scope']+'$')
             with self.cache_permissions_lock:
                 self.cache_permissions[permission['_id']] = permission

@@ -10,7 +10,7 @@ def search(m_roles, m_sessions, m_users):
     try:
         m_users.require_admin(m_sessions.get_user(request))
         result = m_roles.search(
-                _id=request.query.get('_id', None),
+                _ids=request.query.get('_id', None),
                 users=request.query.get('users', None),
                 fields=request.query.get('f', None)
         )

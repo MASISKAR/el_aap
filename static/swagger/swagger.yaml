@@ -4,7 +4,6 @@ info:
   title: ElasticSearch Authentication and Authorization Proxy REST API
   description: |
     This is the ElasticSearch AA Proxy REST API documentation.
-    ui jui jui
 host: localhost:9000
 basePath: /elaap/api/v1
 schemes:
