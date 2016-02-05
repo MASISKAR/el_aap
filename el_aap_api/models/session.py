@@ -84,7 +84,7 @@ class Sessions(FilterMixIN, ProjectionMixIn):
                 raise TokenError
             if not pbkdf2_sha512.verify(token['token'], result['token']):
                 raise TokenError
-            self._coll.update(
+            self._coll.update_one(
                 filter={'_id': Binary(uuid.UUID(token['_id']).bytes, STANDARD)},
                 update={'$set': {'lastused': datetime.datetime.utcnow()}}
             )
