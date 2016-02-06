@@ -17,6 +17,7 @@ from requestlogger import WSGILogger, ApacheFormatter
 from el_aap_api.app import app, app_logger
 from el_aap_api.controllers import *
 from el_aap_api.models import *
+from el_aap_api.errors import error_catcher
 
 
 def main():
@@ -116,6 +117,7 @@ class ElasticSearchAAPAPI(object):
         app.install(MetaPlugin(roles, 'm_roles'))
         app.install(MetaPlugin(session, 'm_sessions'))
         app.install(MetaPlugin(users, 'm_users'))
+        app.install(error_catcher)
 
         # access log logger
         acc_handlers = []

@@ -1,4 +1,19 @@
 __author__ = 'schlitzer'
+from bottle import response
+import jsonschema.exceptions
+
+
+def error_catcher(func):
+    def wrapper(*args, **kwargs):
+        try:
+            try:
+                return func(*args, **kwargs)
+            except jsonschema.exceptions.ValidationError as err:
+                raise InvalidBody(err)
+        except BaseError as err:
+            response.status = err.status
+            return err.errmsg
+    return wrapper
 
 
 class BaseError(Exception):
@@ -92,20 +107,11 @@ class DuplicateResource(ModelError):
         )
 
 
-class MalformedResourceID(ValidationError):
-    def __init__(self):
-        super().__init__(
-            status=400,
-            code=3001,
-            msg="Malformed resource ID"
-        )
-
-
-class InvalidPostBody(ValidationError):
+class InvalidBody(ValidationError):
     def __init__(self, err):
         super().__init__(
                 status=400,
-                code=3002,
+                code=3001,
                 msg="Invalid post body: {0}".format(err)
         )
 
@@ -125,13 +131,4 @@ class InvalidSelectors(ValidationError):
                 status=400,
                 code=3004,
                 msg="Invalid selection: {0}".format(err)
-        )
-
-
-class InvalidUpdateDocument(ValidationError):
-    def __init__(self, err):
-        super().__init__(
-                status=400,
-                code=3005,
-                msg="Invalid update document: {0}".format(err)
         )

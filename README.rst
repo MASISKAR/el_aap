@@ -44,7 +44,7 @@ Basic Installation
 
 Install dependencies:
 
-  pip install bottle cachetools pep3143daemon pymongo requests validation waitress wsgi-request-logger
+  pip install bottle cachetools jsonscheme pep3143daemon pymongo requests waitress wsgi-request-logger
 
 
 Clone the repository:
@@ -102,10 +102,10 @@ This project uses the following external libs:
 
  - bottle
  - cachetools
+ - jsonschema
  - pep3143daemon
  - pymongo
  - requests
- - validation
  - waitress
  - wsgi-request-logger
 

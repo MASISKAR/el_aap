@@ -2,41 +2,9 @@ __author__ = 'schlitzer'
 
 import pymongo
 import pymongo.errors
-import validation
 
 from el_aap_api.models.mixins import FilterMixIN, ProjectionMixIn
 from el_aap_api.errors import *
-
-
-class RolesValidator(object):
-    def __init__(self):
-        v_id = validation.String(regex="^([a-zA-Z0-9]|_|\.|-){8,64}$")
-        self.id = v_id.validate
-
-        v_str = validation.String()
-        self.str = v_str.validate
-
-        user_list = validation.List(uniq=True)
-        user_list.validator = v_id
-
-        create = validation.Dict(ignore_unknown=False)
-        create.required['_id'] = v_id
-        create.optional['description'] = v_str
-        create.optional['users'] = user_list
-        self.create = create.validate
-
-        update = validation.Dict(ignore_unknown=False)
-        update.optional['description'] = v_str
-        update.optional['users'] = user_list
-        self.update = update.validate
-
-        fields = validation.List()
-        fields.validator = validation.Choice(choices=[
-            '_id',
-            'description',
-            'users'
-        ])
-        self.fields = fields.validate
 
 
 class Roles(FilterMixIN, ProjectionMixIn):
@@ -46,7 +14,6 @@ class Roles(FilterMixIN, ProjectionMixIn):
             'description': 1,
             'users': 1
         }
-        self.validate = RolesValidator()
         self._coll = coll
 
     def check_ids(self, _ids):
@@ -58,14 +25,7 @@ class Roles(FilterMixIN, ProjectionMixIn):
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
 
-    def create(self, role, chk_users):
-        try:
-            self.validate.create(role)
-        except validation.ValidationError as err:
-            raise InvalidPostBody(err)
-        if 'users' in role:
-            if not chk_users(role['users']):
-                raise InvalidSelectors('some users missing')
+    def create(self, role):
         try:
             self._coll.insert_one(role)
         except pymongo.errors.DuplicateKeyError:
@@ -77,10 +37,6 @@ class Roles(FilterMixIN, ProjectionMixIn):
 
     def delete(self, _id):
         try:
-            self.validate.id(_id)
-        except validation.ValidationError:
-            raise MalformedResourceID
-        try:
             result = self._coll.delete_one(filter={'_id': _id})
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
@@ -89,10 +45,6 @@ class Roles(FilterMixIN, ProjectionMixIn):
         return
 
     def get(self, _id, fields=None):
-        try:
-            self.validate.id(_id)
-        except validation.ValidationError:
-            raise MalformedResourceID
         try:
             result = self._coll.find_one(
                     filter={'_id': _id},
@@ -119,20 +71,7 @@ class Roles(FilterMixIN, ProjectionMixIn):
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
 
-    def update(self, _id, delta, chk_users):
-        try:
-            self.validate.id(_id)
-        except validation.ValidationError:
-            raise MalformedResourceID
-        try:
-            self.validate.update(delta)
-        except validation.ValidationError as err:
-            raise InvalidUpdateDocument(err)
-        if len(delta) == 0:
-            raise InvalidUpdateDocument('empty')
-        if 'users' in delta:
-            if not chk_users(delta['users']):
-                raise InvalidSelectors('some users missing')
+    def update(self, _id, delta):
         update = {'$set': {}}
         for k, v in delta.items():
             update['$set'][k] = v

@@ -13,32 +13,12 @@ from el_aap_api.models.mixins import FilterMixIN, ProjectionMixIn
 from el_aap_api.errors import *
 
 
-class SessionValidator(object):
-    def __init__(self):
-        v_id = validation.StringUUID()
-        self.id = v_id.validate
-
-        token = validation.Dict(ignore_unknown=False)
-        token.required['_id'] = v_id
-        token.required['token'] = v_id
-        self.token = token.validate
-
-        fields = validation.List()
-        fields.validator = validation.Choice(choices=[
-            '_id',
-            'lastused',
-            'user'
-        ])
-        self.fields = fields.validate
-
-
 class Sessions(FilterMixIN, ProjectionMixIn):
     def __init__(self, coll):
         self.defaultfields = {
             '_id': 1,
             'user': 1,
         }
-        self.validate = SessionValidator()
         self._coll = coll
 
     @staticmethod
@@ -71,10 +51,6 @@ class Sessions(FilterMixIN, ProjectionMixIn):
             return token
 
     def check_token(self, token):
-        try:
-            self.validate.token(token)
-        except validation.ValidationError as err:
-            raise InvalidPostBody(err)
         try:
             result = self._coll.find_one(
                     filter={'_id': Binary(uuid.UUID(token['_id']).bytes, STANDARD)},
@@ -112,10 +88,6 @@ class Sessions(FilterMixIN, ProjectionMixIn):
 
     def delete(self, _id):
         try:
-            self.validate.id(_id)
-        except validation.ValidationError:
-            raise MalformedResourceID
-        try:
             result = self._coll.delete_one(filter={'_id': Binary(uuid.UUID(_id).bytes, STANDARD)})
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
@@ -124,10 +96,6 @@ class Sessions(FilterMixIN, ProjectionMixIn):
         return
 
     def get(self, _id, fields=None):
-        try:
-            self.validate.id(_id)
-        except validation.ValidationError:
-            raise MalformedResourceID
         try:
             result = self._coll.find_one(
                 {

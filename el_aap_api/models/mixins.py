@@ -9,12 +9,10 @@ class ProjectionMixIn(object):
     def _projection(self, fields=None):
         if not fields:
             return self.defaultfields
-        try:
-            self.validate.str(fields)
-            fields = fields.split(sep=',')
-            self.validate.fields(fields)
-        except validation.ValidationError as err:
-            raise InvalidFields(err)
+        fields = fields.split(sep=',')
+        for field in fields:
+            if field not in self.defaultfields:
+                raise InvalidFields('{0} is not a valid field'.format(field))
         result = {}
         for field in fields:
             result[field] = 1

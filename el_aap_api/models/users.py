@@ -1,47 +1,11 @@
 __author__ = 'schlitzer'
 
-import inspect
-
 from passlib.hash import pbkdf2_sha512
 import pymongo
 import pymongo.errors
-import validation
 
 from el_aap_api.models.mixins import FilterMixIN, ProjectionMixIn
 from el_aap_api.errors import *
-
-
-class UsersValidator(object):
-    def __init__(self):
-        v_id = validation.String(regex="^([a-zA-Z0-9]|_|\.|-){8,64}$")
-        self.id = v_id.validate
-
-        v_str = validation.String()
-        self.str = v_str.validate
-
-        credentials = validation.Dict(ignore_unknown=False)
-        credentials.required['password'] = v_str
-        credentials.required['user'] = v_id
-        self.credentials = credentials.validate
-
-        create = validation.Dict(ignore_unknown=False)
-        create.required['_id'] = v_id
-        create.required['admin'] = validation.Bool()
-        create.required['email'] = v_str
-        create.required['name'] = v_str
-        create.required['password'] = v_str
-        self.create = create.validate
-
-        update = validation.Dict(ignore_unknown=False)
-        update.optional['admin'] = validation.Bool()
-        update.optional['email'] = v_str
-        update.optional['name'] = v_str
-        update.optional['password'] = v_str
-        self.update = update.validate
-
-        fields = validation.List()
-        fields.validator = validation.Choice(choices=['_id', 'admin', 'email', 'name'])
-        self.fields = fields.validate
 
 
 class Users(FilterMixIN, ProjectionMixIn):
@@ -52,7 +16,6 @@ class Users(FilterMixIN, ProjectionMixIn):
             'email': 1,
             'name': 1
         }
-        self.validate = UsersValidator()
         self._coll = coll
 
     @staticmethod
@@ -68,10 +31,6 @@ class Users(FilterMixIN, ProjectionMixIn):
         return user
 
     def check_credentials(self, credentials=None):
-        try:
-            self.validate.credentials(credentials)
-        except validation.ValidationError as err:
-            raise InvalidPostBody(err)
         try:
             password = self._coll.find_one(
                     filter={'_id': credentials['user']},
@@ -95,12 +54,8 @@ class Users(FilterMixIN, ProjectionMixIn):
             raise MongoConnError(err)
 
     def create(self, user):
+        user['password'] = self._password(user['password'])
         try:
-            self.validate.create(user)
-        except validation.ValidationError as err:
-            raise InvalidPostBody(err)
-        try:
-            user['password'] = self._password(user['password'])
             self._coll.insert_one(user)
         except pymongo.errors.DuplicateKeyError:
             raise DuplicateResource(user['_id'])
@@ -110,10 +65,6 @@ class Users(FilterMixIN, ProjectionMixIn):
 
     def delete(self, _id):
         try:
-            self.validate.id(_id)
-        except validation.ValidationError:
-            raise MalformedResourceID
-        try:
             result = self._coll.delete_one(filter={'_id': _id})
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
@@ -122,10 +73,6 @@ class Users(FilterMixIN, ProjectionMixIn):
         return
 
     def get(self, _id, fields=None):
-        try:
-            self.validate.id(_id)
-        except validation.ValidationError:
-            raise MalformedResourceID
         try:
             result = self._coll.find_one(
                     filter={'_id': _id},
@@ -146,6 +93,7 @@ class Users(FilterMixIN, ProjectionMixIn):
 
     def require_admin(self, user):
         user = self.get(user, fields='admin')
+        print(user)
         if not user['admin']:
             raise PermError
 
@@ -165,16 +113,6 @@ class Users(FilterMixIN, ProjectionMixIn):
             raise MongoConnError(err)
 
     def update(self, _id, delta):
-        try:
-            self.validate.id(_id)
-        except validation.ValidationError:
-            raise MalformedResourceID
-        try:
-            self.validate.update(delta)
-        except validation.ValidationError as err:
-            raise InvalidUpdateDocument(err)
-        if len(delta) == 0:
-            raise InvalidUpdateDocument('empty')
         if 'password' in delta:
             delta['password'] = self._password(delta['password'])
         update = {'$set': {}}

@@ -8,7 +8,7 @@ host: localhost:9000
 basePath: /elaap/api/v1
 schemes:
   - http
-  - http
+  - https
 tags:
   - name: Authenticate
     description: Authentication Related Stuff
@@ -60,6 +60,11 @@ paths:
           in: path
           description: 'Permissions object id'
           required: true
+          type: string
+        - name: f
+          in: query
+          description: 'Filter Attributes that should be retuned'
+          required: false
           type: string
       responses:
         '200':
@@ -147,6 +152,11 @@ paths:
           description: 'filter: comma seperated list of roles or regex'
           required: false
           type: string
+        - name: f
+          in: query
+          description: 'Filter Attributes that should be retuned'
+          required: false
+          type: string
       responses:
         '200':
           description: 'Permission Object'
@@ -192,6 +202,11 @@ paths:
           in: path
           description: Role ID
           required: true
+          type: string
+        - name: f
+          in: query
+          description: 'Filter Attributes that should be retuned'
+          required: false
           type: string
       responses:
         '200':
@@ -273,6 +288,11 @@ paths:
           description: 'filter: comma seperates list of users, or regex'
           required: false
           type: string
+        - name: f
+          in: query
+          description: 'Filter Attributes that should be retuned'
+          required: false
+          type: string
       responses:
         '200':
           description: 'Roles Object'
@@ -320,7 +340,7 @@ paths:
           type: string
         - name: f
           in: query
-          description: Filter Attributes that should be retuned
+          description: 'Filter Attributes that should be retuned'
           required: false
           type: string
       responses:
@@ -406,7 +426,7 @@ paths:
           type: string
         - name: f
           in: query
-          description: Filter Attributes that should be retuned
+          description: 'Filter Attributes that should be retuned'
           required: false
           type: string
       responses:
@@ -424,6 +444,12 @@ paths:
         - Users
       description: |
         Delete user resource executing this request
+      parameters:
+        - name: f
+          in: query
+          description: 'Filter Attributes that should be retuned'
+          required: false
+          type: string
       responses:
         '200':
           description: Empty response on success
