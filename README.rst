@@ -86,28 +86,12 @@ Preparation
 execute:
 
   contrib/el_aap_api indicies
+
   contrib/el_aap_api create_admin
 
 This will create some indices in MongoDB and a default admin user, that can be used to create other users, roles and permission rules.
 
 The default admin is "default_admin" with the password "password"
-
-
-
-
-Installing
-----------
-
-This project uses the following external libs:
-
- - bottle
- - cachetools
- - jsonschema
- - pep3143daemon
- - pymongo
- - requests
- - waitress
- - wsgi-request-logger
 
 
 Author
