@@ -1,6 +1,6 @@
 __author__ = 'schlitzer'
 
-from bottle import request, response
+from bottle import request
 import requests
 
 from el_aap.app import app, str_index, endpoint
@@ -10,11 +10,7 @@ from el_aap_api.errors import *
 @app.put('/_template')
 @app.put('/_warmer')
 def admin_put(m_aa):
-    try:
-        m_aa.require_permission(':', '')
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    m_aa.require_permission(':', '')
     r = requests.put(
             url=endpoint.endpoint+request.path,
             params=request.query,
@@ -32,11 +28,7 @@ def admin_put(m_aa):
 @app.put(str_index+'/_mapping/<_type>')
 @app.put(str_index+'/_settings')
 def put(m_aa, _index, _type=None):
-    try:
-        m_aa.require_permission(':index:manage:', _index)
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    m_aa.require_permission(':index:manage:', _index)
     r = requests.put(
             url=endpoint.endpoint+request.path,
             params=request.query,
@@ -52,12 +44,8 @@ def put(m_aa, _index, _type=None):
 @app.post('/_optimize')
 @app.post('/_refresh')
 @app.post('/_cache/clear')
-def post(m_aa,):
-    try:
-        m_aa.require_permission(':', '')
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+def post(m_aa):
+    m_aa.require_permission(':', '')
     r = requests.post(
             url=endpoint.endpoint+request.path,
             params=request.query,
@@ -79,11 +67,7 @@ def post(m_aa,):
 @app.post(str_index+'/_open')
 @app.post(str_index+'/_forcemerge')
 def post(m_aa, _index):
-    try:
-        m_aa.require_permission(':index:manage:', _index)
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    m_aa.require_permission(':index:manage:', _index)
     r = requests.post(
         url=endpoint.endpoint+request.path,
         params=request.query,
@@ -97,12 +81,8 @@ def post(m_aa, _index):
 @app.delete(str_index+'')
 @app.delete(str_index+'/')
 def delete(m_aa, _index):
-    try:
-        for index in _index.split(','):
-            m_aa.require_permission(':index:manage:', index)
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    for index in _index.split(','):
+        m_aa.require_permission(':index:manage:', index)
     r = requests.delete(
         url=endpoint.endpoint+request.path,
         params=request.query,
@@ -126,11 +106,7 @@ def delete(m_aa, _index):
 @app.get('/_all/_settings')
 @app.get('/_all/_settings/<dummy:path')
 def admin_info(m_aa, dummy=None):
-    try:
-        m_aa.require_permission(':', '')
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    m_aa.require_permission(':', '')
     r = requests.get(
         url=endpoint.endpoint+request.path,
         params=request.query,
@@ -157,12 +133,8 @@ def admin_info(m_aa, dummy=None):
 @app.get(str_index+'/_settings/<dummy:path')
 @app.get(str_index+'/(<_type>)')
 def info(m_aa, _index, dummy=None):
-    try:
-        for index in _index.split(','):
-            m_aa.require_permission(':index:manage:monitor', index)
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    for index in _index.split(','):
+        m_aa.require_permission(':index:manage:monitor', index)
     r = requests.get(
         url=endpoint.endpoint+request.path,
         params=request.query,

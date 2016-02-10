@@ -12,11 +12,7 @@ from el_aap_api.errors import *
 @app.get('/_nodes')
 @app.get('/_nodes/<dummy:path>')
 def info_get(m_aa, dummy=None):
-    try:
-        m_aa.require_permission(':cluster:monitor', '')
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    m_aa.require_permission(':cluster:monitor', '')
     r = requests.get(
             url=endpoint.endpoint+request.path,
             params=request.query,
@@ -32,11 +28,7 @@ def info_get(m_aa, dummy=None):
 @app.post('/_nodes')
 @app.post('/_nodes/<dummy:path>')
 def info_post(m_aa, dummy=None):
-    try:
-        m_aa.require_permission(':cluster:', '')
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    m_aa.require_permission(':cluster:', '')
     r = requests.post(
             url=endpoint.endpoint+request.path,
             params=request.query,
@@ -49,11 +41,7 @@ def info_post(m_aa, dummy=None):
 
 @app.get('/_plugin/<dummy:path>')
 def plugin_get(m_aa, dummy=None):
-    try:
-        m_aa.require_permission(':', '')
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    m_aa.require_permission(':', '')
     r = requests.get(
         url=endpoint.endpoint+request.path,
         params=request.query,
@@ -66,11 +54,7 @@ def plugin_get(m_aa, dummy=None):
 
 @app.post('/_plugin/<dummy:path>')
 def plugin_post(m_aa, dummy=None):
-    try:
-        m_aa.require_permission(':', '')
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    m_aa.require_permission(':', '')
     r = requests.post(
         url=endpoint.endpoint+request.path,
         params=request.query,
@@ -83,11 +67,7 @@ def plugin_post(m_aa, dummy=None):
 
 @app.put('/_plugin/<dummy:path>')
 def plugin_put(m_aa, dummy=None):
-    try:
-        m_aa.require_permission(':', '')
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    m_aa.require_permission(':', '')
     r = requests.put(
         url=endpoint.endpoint+request.path,
         params=request.query,
@@ -100,11 +80,7 @@ def plugin_put(m_aa, dummy=None):
 
 @app.delete('/_plugin/<dummy:path>')
 def plugin_get(m_aa, dummy=None):
-    try:
-        m_aa.require_permission(':', '')
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    m_aa.require_permission(':', '')
     r = requests.delete(
         url=endpoint.endpoint+request.path,
         params=request.query,

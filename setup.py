@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='el_aap',
@@ -8,11 +8,15 @@ setup(
 Elasticsearch Authentication and Authorization reverse proxy
 implementation in Python 3.
 
-Copyright (c) 2015, Stephan Schultchen.
+Copyright (c) 2016, Stephan Schultchen.
 
 License: MIT (see LICENSE for details)
     """,
-    packages=['el_aap', 'el_aap_api'],
+    packages=find_packages(),
+    scripts=[
+        'contrib/el_aap',
+        'contrib/el_aap_api'
+    ],
     url='https://github.com/schlitzered/pyredis',
     license='MIT',
     author='schlitzer',
@@ -26,12 +30,12 @@ License: MIT (see LICENSE for details)
     install_requires=[
         'bottle',
         'cachetools',
+        'jsonschema',
         'pep3143daemon',
         'pymongo',
         'requests',
         'waitress',
         'wsgi-request-logger',
-        'validation'
     ],
     keywords=[
         'elasticsearch'

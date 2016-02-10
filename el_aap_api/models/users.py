@@ -93,7 +93,6 @@ class Users(FilterMixIN, ProjectionMixIn):
 
     def require_admin(self, user):
         user = self.get(user, fields='admin')
-        print(user)
         if not user['admin']:
             raise PermError
 

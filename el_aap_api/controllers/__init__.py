@@ -1,8 +1,7 @@
 __author__ = 'schlitzer'
 
-import os
-import glob
-
-
-__all__ = [os.path.basename(
-    f)[:-3] for f in glob.glob(os.path.dirname(__file__) + "/*.py")]
+import el_aap_api.controllers.authenticate
+import el_aap_api.controllers.permissions
+import el_aap_api.controllers.roles
+import el_aap_api.controllers.static
+import el_aap_api.controllers.users

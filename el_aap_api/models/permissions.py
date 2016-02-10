@@ -51,6 +51,15 @@ class Permissions(FilterMixIN, ProjectionMixIn):
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
 
+    def remove_role(self, role):
+        try:
+            self._coll.update_many(
+                filter={"roles": role},
+                update={"$pull": {"roles": role}}
+            )
+        except pymongo.errors.ConnectionFailure as err:
+            raise MongoConnError(err)
+
     def search(self, _ids=None, scope=None, permissions=None, roles=None, fields=None):
         query = {}
         self._filter_builder(query, '_id', _ids, features=['re'])

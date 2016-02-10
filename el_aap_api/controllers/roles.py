@@ -49,6 +49,7 @@ def update(m_roles, m_sessions, m_users, role):
 
 
 @app.delete('/elaap/api/v1/roles/<role>')
-def delete(m_roles, m_sessions, m_users, role):
+def delete(m_roles, m_sessions, m_users, m_permissions, role):
     m_users.require_admin(m_sessions.get_user(request))
+    m_permissions.remove_role(role)
     return m_roles.delete(role)

@@ -57,6 +57,8 @@ class FilterMixIN(object):
 
     @staticmethod
     def _filter_builder_boolean(query, field, selector):
+        if not selector:
+            return
         if selector in [True, 'true', 'True', '1']:
             selector = True
         elif selector in [False, 'false', 'False', '0']:

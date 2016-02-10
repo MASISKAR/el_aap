@@ -56,6 +56,15 @@ class Roles(FilterMixIN, ProjectionMixIn):
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
 
+    def remove_user(self, user):
+        try:
+            self._coll.update_many(
+                filter={"users": user},
+                update={"$pull": {"users": user}}
+            )
+        except pymongo.errors.ConnectionFailure as err:
+            raise MongoConnError(err)
+
     def search(self, _ids=None, users=None, fields=None):
         query = {}
         self._filter_builder(query, '_id', _ids, features=['re'])

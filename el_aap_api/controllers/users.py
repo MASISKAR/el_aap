@@ -31,8 +31,9 @@ def update(m_users, m_sessions, user):
 
 
 @app.delete('/elaap/api/v1/users/<user>')
-def delete(m_users, m_sessions, user):
+def delete(m_users, m_sessions, m_roles, user):
     m_users.require_admin(m_sessions.get_user(request))
+    m_roles.remove_user(user)
     return m_users.delete(user)
 
 

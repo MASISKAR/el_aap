@@ -2,7 +2,7 @@ __author__ = 'schlitzer'
 
 import json
 
-from bottle import request, response
+from bottle import request
 import requests
 
 from el_aap.app import app, str_index, str_id, endpoint
@@ -13,11 +13,7 @@ from el_aap_api.errors import *
 @app.get(str_index+'/<_type>/'+str_id+'/_explain')
 @app.get(str_index+'/<_type>/'+str_id+'/_percolate')
 def get(m_aa, _index, _type, _id):
-    try:
-        m_aa.require_permission(':index:crud:search', _index)
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    m_aa.require_permission(':index:crud:search', _index)
     r = requests.get(
             url=endpoint.endpoint+request.path,
             params=request.query,
@@ -41,12 +37,8 @@ def get(m_aa, _index, _type, _id):
 @app.get(str_index+'/_validate/query')
 @app.get(str_index+'/<_type>/_validate/query')
 def search_get(m_aa, _index, _type=None):
-    try:
-        for index in _index.split(','):
-            m_aa.require_permission(':index:crud:search', index)
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    for index in _index.split(','):
+        m_aa.require_permission(':index:crud:search', index)
     r = requests.get(
             url=endpoint.endpoint+request.path,
             params=request.query,
@@ -70,12 +62,8 @@ def search_get(m_aa, _index, _type=None):
 @app.post(str_index+'/_validate/query')
 @app.post(str_index+'/<_type>/_validate/query')
 def search_post(m_aa, _index, _type=None):
-    try:
-        for index in _index.split(','):
-            m_aa.require_permission(':index:crud:search', index)
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    for index in _index.split(','):
+        m_aa.require_permission(':index:crud:search', index)
     r = requests.post(
         url=endpoint.endpoint+request.path,
         params=request.query,
@@ -92,11 +80,7 @@ def search_post(m_aa, _index, _type=None):
 @app.get('/_search/exists')
 @app.get('/_validate/query')
 def search_admin_get(m_aa):
-    try:
-        m_aa.require_permission(':', '')
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    m_aa.require_permission(':', '')
     r = requests.get(
             url=endpoint.endpoint+request.path,
             params=request.query,
@@ -113,11 +97,7 @@ def search_admin_get(m_aa):
 @app.post('/_search/exists')
 @app.post('/_validate/query')
 def search_admin_post(m_aa):
-    try:
-            m_aa.require_permission(':', '')
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    m_aa.require_permission(':', '')
     r = requests.post(
             url=endpoint.endpoint+request.path,
             params=request.query,
@@ -133,33 +113,25 @@ def search_admin_post(m_aa):
 @app.get(str_index+'/<_type>/_msearch')
 def m_search(m_aa, _index=None, _type=None):
     if _index:
-        try:
-            for index in _index.split(','):
-                m_aa.require_permission(':index:crud:search', index)
-        except BaseError as err:
-            response.status = err.status
-            return err.errmsg
+        for index in _index.split(','):
+            m_aa.require_permission(':index:crud:search', index)
     header = True
     for data in request.body.readlines():
+        if not header:
+            header = True
+            continue
         try:
-            if not header:
-                header = True
-                continue
-            try:
-                for index in json.loads(data.decode('utf8'))['index'].split(','):
-                    m_aa.require_permission(':index:crud:search', index)
-            except (KeyError, ValueError):
-                if not _index:
-                    raise PermError
-            header = False
-        except BaseError as err:
-            response.status = err.status
-            return err.errmsg
+            for index in json.loads(data.decode('utf8'))['index'].split(','):
+                m_aa.require_permission(':index:crud:search', index)
+        except (KeyError, ValueError):
+            if not _index:
+                raise PermError
+        header = False
     request.body.seek(0)
     r = requests.get(
-            url=endpoint.endpoint+request.path,
-            params=request.query,
-            data=request.body
+        url=endpoint.endpoint+request.path,
+        params=request.query,
+        data=request.body
     )
     response.status = r.status_code
     response.set_header('charset', 'UTF8')
@@ -171,28 +143,20 @@ def m_search(m_aa, _index=None, _type=None):
 @app.get(str_index+'/<_type>/_mpercolate')
 def m_search(m_aa, _index=None, _type=None):
     if _index:
-        try:
-            for index in _index.split(','):
-                m_aa.require_permission(':index:crud:search', index)
-        except BaseError as err:
-            response.status = err.status
-            return err.errmsg
+        for index in _index.split(','):
+            m_aa.require_permission(':index:crud:search', index)
     header = True
     for data in request.body.readlines():
+        if not header:
+            header = True
+            continue
         try:
-            if not header:
-                header = True
-                continue
-            try:
-                for index in json.loads(data.decode('utf8'))['percolate']['index'].split(','):
-                    m_aa.require_permission(':index:crud:search', index)
-            except (KeyError, ValueError):
-                if not _index:
-                    raise PermError
-            header = False
-        except BaseError as err:
-            response.status = err.status
-            return err.errmsg
+            for index in json.loads(data.decode('utf8'))['percolate']['index'].split(','):
+                m_aa.require_permission(':index:crud:search', index)
+        except (KeyError, ValueError):
+            if not _index:
+                raise PermError
+        header = False
     request.body.seek(0)
     r = requests.get(
             url=endpoint.endpoint+request.path,
@@ -206,11 +170,7 @@ def m_search(m_aa, _index=None, _type=None):
 
 @app.post('/_field_stats')
 def field_stats(m_aa):
-    try:
-        m_aa.require_permission(':', '')
-    except BaseError as err:
-        response.status = err.status
-        return err.errmsg
+    m_aa.require_permission(':', '')
     r = requests.post(
             url=endpoint.endpoint+request.path,
             params=request.query,

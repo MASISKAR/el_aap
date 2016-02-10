@@ -2,6 +2,7 @@ __author__ = 'schlitzer'
 # stdlib
 import argparse
 import configparser
+import os
 import signal
 import sys
 import time
@@ -19,6 +20,7 @@ from el_aap.app import app, app_logger, endpoint
 from el_aap.controllers import *
 from el_aap_api.models import *
 from el_aap.models import *
+from el_aap_api.errors import error_catcher
 
 
 def main():
@@ -106,6 +108,7 @@ class ElasticSearchAAP(object):
         app.install(MetaPlugin(roles, 'm_roles'))
         app.install(MetaPlugin(users, 'm_users'))
         app.install(MetaPlugin(aa, 'm_aa'))
+        app.install(error_catcher)
 
         # access log logger
         acc_handlers = []
