@@ -16,6 +16,21 @@ class Roles(FilterMixIN, ProjectionMixIn):
         }
         self._coll = coll
 
+    def add_users(self, _id, users):
+        update = {'$addToSet': {"users": {"$each": users}}}
+        try:
+            result = self._coll.find_one_and_update(
+                filter={'_id': _id},
+                update=update,
+                projection=self._projection(),
+                return_document=pymongo.ReturnDocument.AFTER
+            )
+        except pymongo.errors.ConnectionFailure as err:
+            raise MongoConnError(err)
+        if result is None:
+            raise ResourceNotFound(_id)
+        return result
+
     def check_ids(self, _ids):
         try:
             count = self._coll.find(
@@ -56,10 +71,28 @@ class Roles(FilterMixIN, ProjectionMixIn):
         except pymongo.errors.ConnectionFailure as err:
             raise MongoConnError(err)
 
-    def remove_user(self, user):
+    def remove_users(self, _id, users):
+        update = {"$pullAll": {"users": users}}
+        try:
+            result = self._coll.find_one_and_update(
+                filter={'_id': _id},
+                update=update,
+                projection=self._projection(),
+                return_document=pymongo.ReturnDocument.AFTER
+            )
+        except pymongo.errors.ConnectionFailure as err:
+            raise MongoConnError(err)
+        if result is None:
+            raise ResourceNotFound(_id)
+        return result
+
+    def remove_user_from_all(self, user, role=None):
+        query = {"users": user}
+        if role:
+            query['_id']
         try:
             self._coll.update_many(
-                filter={"users": user},
+                filter=query,
                 update={"$pull": {"users": user}}
             )
         except pymongo.errors.ConnectionFailure as err:

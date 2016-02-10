@@ -126,6 +126,124 @@ paths:
           description: Permission not fount
           schema:
             $ref: '#/definitions/Error'
+  '/permissions/{permission}/roles':
+    put:
+      tags:
+        - Permissions
+      description: |
+        Add roles to permission
+      parameters:
+        - name: permission
+          in: path
+          description: Permission ID
+          required: true
+          type: string
+        - name: roles
+          in: body
+          description: List with roles to add
+          schema:
+            $ref: '#/definitions/Permission:MANIPULATE:roles'
+      responses:
+        '200':
+          description: Permission Object
+          schema:
+            $ref: '#/definitions/Permission:GET'
+        '403':
+          description: Insufficient permission
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Permission not fount
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Permissions
+      description: |
+        Delete users from permission
+      parameters:
+        - name: permission
+          in: path
+          description: Permission ID
+          required: true
+          type: string
+        - name: roles
+          in: body
+          description: List with roles to delete
+          schema:
+            $ref: '#/definitions/Permission:MANIPULATE:roles'
+      responses:
+        '200':
+          description: Permission Object
+          schema:
+            $ref: '#/definitions/Permission:GET'
+        '403':
+          description: Insufficient permission
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Permission not fount
+          schema:
+            $ref: '#/definitions/Error'
+  '/permissions/{permission}/permissions':
+    put:
+      tags:
+        - Permissions
+      description: |
+        Add permissions to permission
+      parameters:
+        - name: permission
+          in: path
+          description: Permission ID
+          required: true
+          type: string
+        - name: permissions
+          in: body
+          description: List of permissions to add
+          schema:
+            $ref: '#/definitions/Permission:MANIPULATE:permissions'
+      responses:
+        '200':
+          description: Permission Object
+          schema:
+            $ref: '#/definitions/Permission:GET'
+        '403':
+          description: Insufficient permission
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Permission not fount
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Permissions
+      description: |
+        Delete permissions from permission
+      parameters:
+        - name: permission
+          in: path
+          description: Permission ID
+          required: true
+          type: string
+        - name: permissions
+          in: body
+          description: List of permissions to delete
+          schema:
+            $ref: '#/definitions/Permission:MANIPULATE:permissions'
+      responses:
+        '200':
+          description: Permission Object
+          schema:
+            $ref: '#/definitions/Permission:GET'
+        '403':
+          description: Insufficient permission
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Permission not fount
+          schema:
+            $ref: '#/definitions/Error'
   '/permissions/_search':
     get:
       tags:
@@ -264,6 +382,65 @@ paths:
       responses:
         '200':
           description: Empty response on success
+        '403':
+          description: Insufficient permission
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Role not fount
+          schema:
+            $ref: '#/definitions/Error'
+  '/roles/{role}/users':
+    put:
+      tags:
+        - Roles
+      description: |
+        Add users to role
+      parameters:
+        - name: role
+          in: path
+          description: Role ID
+          required: true
+          type: string
+        - name: users
+          in: body
+          description: List of users to add
+          schema:
+            $ref: '#/definitions/Role:MANIPULATE:users'
+      responses:
+        '200':
+          description: Role Object
+          schema:
+            $ref: '#/definitions/Role:GET'
+        '403':
+          description: Insufficient permission
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Role not fount
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Roles
+      description: |
+        Delete users from role
+      parameters:
+        - name: role
+          in: path
+          description: Role ID
+          required: true
+          type: string
+        - name: users
+          in: body
+          description: List of users to delete
+          schema:
+            $ref: '#/definitions/Role:MANIPULATE:users'
+      responses:
+        '200':
+          description: Role Object
+          schema:
+            $ref: '#/definitions/Role:GET'
         '403':
           description: Insufficient permission
           schema:
@@ -563,6 +740,12 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Permission:GET'
+  'Permission:MANIPULATE:permissions':
+    type: array
+    items: string
+  'Permission:MANIPULATE:roles':
+    type: array
+    items: string
   'Permission:POST':
     type: object
     properties:
@@ -613,6 +796,9 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Role:GET'
+  'Role:MANIPULATE:users':
+    type: array
+    items: string
   'Role:POST':
     type: object
     properties:

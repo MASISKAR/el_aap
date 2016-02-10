@@ -33,7 +33,7 @@ def update(m_users, m_sessions, user):
 @app.delete('/elaap/api/v1/users/<user>')
 def delete(m_users, m_sessions, m_roles, user):
     m_users.require_admin(m_sessions.get_user(request))
-    m_roles.remove_user(user)
+    m_roles.remove_user_from_all(user)
     return m_users.delete(user)
 
 
@@ -47,8 +47,10 @@ def create(m_users, m_sessions):
 
 
 @app.delete('/elaap/api/v1/users/_self')
-def self_delete(m_users, m_sessions):
-    return m_users.delete(m_sessions.get_user(request))
+def self_delete(m_users, m_roles, m_sessions):
+    user = m_sessions.get_user(request)
+    m_roles.remove_user_from_all(user)
+    return m_users.delete(user)
 
 
 @app.get('/elaap/api/v1/users/_self')

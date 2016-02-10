@@ -29,10 +29,10 @@ def get(m_roles, m_sessions, m_users, role):
 @app.post('/elaap/api/v1/roles')
 def create(m_roles, m_sessions, m_users):
     jsonschema.validate(request.json, ROLES_CREATE, format_checker=jsonschema.draft4_format_checker)
+    m_users.require_admin(m_sessions.get_user(request))
     if 'users' in request.json:
         if not m_users.check_ids(request.json['users']):
             raise InvalidBody("non existing users selected")
-    m_users.require_admin(m_sessions.get_user(request))
     result = m_roles.create(request.json)
     response.status = 201
     return result
@@ -41,15 +41,34 @@ def create(m_roles, m_sessions, m_users):
 @app.put('/elaap/api/v1/roles/<role>')
 def update(m_roles, m_sessions, m_users, role):
     jsonschema.validate(request.json, ROLES_UPDATE, format_checker=jsonschema.draft4_format_checker)
+    m_users.require_admin(m_sessions.get_user(request))
     if 'users' in request.json:
         if not m_users.check_ids(request.json['users']):
             raise InvalidBody("non existing users selected")
-    m_users.require_admin(m_sessions.get_user(request))
     return m_roles.update(role, request.json)
+
+
+@app.put('/elaap/api/v1/roles/<role>/users')
+def update_users(m_roles, m_sessions, m_users, role):
+    m_users.require_admin(m_sessions.get_user(request))
+    if type(request.json) == list:
+        if not m_users.check_ids(request.json):
+            raise InvalidBody("non existing users selected")
+    else:
+        raise InvalidBody("must be of type list")
+    return m_roles.add_users(role, request.json)
 
 
 @app.delete('/elaap/api/v1/roles/<role>')
 def delete(m_roles, m_sessions, m_users, m_permissions, role):
     m_users.require_admin(m_sessions.get_user(request))
-    m_permissions.remove_role(role)
+    m_permissions.remove_role_from_all(role)
     return m_roles.delete(role)
+
+
+@app.delete('/elaap/api/v1/roles/<role>/users')
+def update_users(m_roles, m_sessions, m_users, role):
+    m_users.require_admin(m_sessions.get_user(request))
+    if not type(request.json) == list:
+        raise InvalidBody("must be of type list")
+    return m_roles.remove_users(role, request.json)
