@@ -252,22 +252,22 @@ paths:
       parameters:
         - name: _id
           in: query
-          description: 'filter: comma seperated list of _ids, or regex'
+          description: 'filter: regular expression'
           required: false
           type: string
         - name: scope
           in: query
-          description: 'filter: comma seperated list of scopes, or regex'
+          description: 'filter: comma seperated list of scopes'
           required: false
           type: string
         - name: permissions
           in: query
-          description: 'filter: comma seperated list if permissions or regex'
+          description: 'filter: comma seperated list if permissions'
           required: false
           type: string
         - name: roles
           in: query
-          description: 'filter: comma seperated list of roles or regex'
+          description: 'filter: comma seperated list of roles'
           required: false
           type: string
         - name: f
@@ -457,12 +457,12 @@ paths:
       parameters:
         - name: _id
           in: query
-          description: 'filter: comma seperated list of _ids, or regex'
+          description: 'filter: regular expression'
           required: false
           type: string
         - name: users
           in: query
-          description: 'filter: comma seperates list of users, or regex'
+          description: 'filter: comma seperates list of users'
           required: false
           type: string
         - name: f
@@ -593,12 +593,12 @@ paths:
       parameters:
         - name: admin
           in: query
-          description: 'boolean, if true, only return admin accounts'
+          description: 'filter: boolean, if true, only return admin accounts'
           required: false
           type: boolean
         - name: _id
           in: query
-          description: 'filter: comma seperated list of _ids, or regex'
+          description: 'filter: regular expression'
           required: false
           type: string
         - name: f

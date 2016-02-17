@@ -7,7 +7,6 @@ from bson.binary import Binary, STANDARD
 from passlib.hash import pbkdf2_sha512
 import pymongo
 import pymongo.errors
-import validation
 
 from el_aap_api.models.mixins import FilterMixIN, ProjectionMixIn
 from el_aap_api.errors import *

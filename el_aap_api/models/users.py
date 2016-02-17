@@ -98,7 +98,7 @@ class Users(FilterMixIN, ProjectionMixIn):
 
     def search(self, _ids=None, admin=None, fields=None):
         query = {}
-        self._filter_builder(query, '_id', _ids, features=['re'])
+        self._filter_builder_re(query, '_id', _ids)
         self._filter_builder_boolean(query, 'admin', admin)
         try:
             result = []

@@ -100,8 +100,8 @@ class Roles(FilterMixIN, ProjectionMixIn):
 
     def search(self, _ids=None, users=None, fields=None):
         query = {}
-        self._filter_builder(query, '_id', _ids, features=['re'])
-        self._filter_builder(query, 'users', users, features=['re'])
+        self._filter_builder_re(query, '_id', _ids)
+        self._filter_builder_list(query, 'users', users)
         try:
             result = []
             for item in self._coll.find(

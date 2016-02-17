@@ -2,7 +2,6 @@ __author__ = 'schlitzer'
 
 import pymongo
 import pymongo.errors
-import validation
 
 from el_aap_api.models.mixins import FilterMixIN, ProjectionMixIn
 from el_aap_api.errors import *
@@ -121,10 +120,10 @@ class Permissions(FilterMixIN, ProjectionMixIn):
 
     def search(self, _ids=None, scope=None, permissions=None, roles=None, fields=None):
         query = {}
-        self._filter_builder(query, '_id', _ids, features=['re'])
-        self._filter_builder(query, 'permissions', permissions, features=['re'])
-        self._filter_builder(query, 'scope', scope, features=['re'])
-        self._filter_builder(query, 'roles', roles, features=['re'])
+        self._filter_builder_re(query, '_id', _ids)
+        self._filter_builder_list(query, 'permissions', permissions)
+        self._filter_builder_list(query, 'scope', scope)
+        self._filter_builder_list(query, 'roles', roles)
         try:
             result = []
             for item in self._coll.find(

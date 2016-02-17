@@ -1,7 +1,5 @@
 __author__ = 'schlitzer'
 
-import validation
-
 from el_aap_api.errors import *
 
 
@@ -20,41 +18,6 @@ class ProjectionMixIn(object):
 
 
 class FilterMixIN(object):
-    def _filter_builder(self, query, field, selector, features=None, validator=None):
-        if selector is None:
-            return
-        if type(selector) is str:
-            self._filter_builder_str(query, field, selector, features, validator)
-        else:
-            self._filter_builder_obj(query, field, selector, features, validator)
-
-    def _filter_builder_obj(self, query, field, selector, features=None, validator=None):
-        if type(selector) is list:
-            self._filter_builder_list(query, field, selector, validator)
-
-    def _filter_builder_str(self, query, field, selector, features=None, validator=None):
-        if 're' in features and selector.startswith('re:'):
-            self._filter_builder_re_str(query, field, selector[3:], validator)
-        elif 're' not in features and selector.startswith('re:'):
-            raise InvalidFields('Regular expression not allowed for: {0}'.format(field))
-        else:
-            self._filter_builder_list_str(query, field, selector, validator)
-
-    @staticmethod
-    def _filter_builder_list(query, field, selector, validator=None):
-        if validator:
-            try:
-                validator(selector)
-                query[field] = {'$in': selector}
-            except validation.ValidationError as err:
-                raise InvalidSelectors(err)
-        else:
-            query[field] = {'$in': selector}
-
-    def _filter_builder_list_str(self, query, field, selector, validator=None):
-        selector = list(set(selector.split(',')))
-        self._filter_builder_list(query, field, selector, validator)
-
     @staticmethod
     def _filter_builder_boolean(query, field, selector):
         if not selector:
@@ -68,12 +31,15 @@ class FilterMixIN(object):
         query[field] = selector
 
     @staticmethod
-    def _filter_builder_re_str(query, field, selector, validator=None):
-        if validator:
-            try:
-                validator(selector)
-                query[field] = {'$regex': selector}
-            except validation.ValidationError as err:
-                raise InvalidSelectors(err)
-        else:
-            query[field] = {'$regex': selector}
+    def _filter_builder_list(query, field, selector):
+        if not selector:
+            return
+        if type(selector) is not list:
+            selector = list(set(selector.split(',')))
+        query[field] = {'$in': selector}
+
+    @staticmethod
+    def _filter_builder_re(query, field, selector):
+        if not selector:
+            return
+        query[field] = {'$regex': selector}
