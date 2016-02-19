@@ -86,13 +86,10 @@ class Roles(FilterMixIN, ProjectionMixIn):
             raise ResourceNotFound(_id)
         return result
 
-    def remove_user_from_all(self, user, role=None):
-        query = {"users": user}
-        if role:
-            query['_id']
+    def remove_user_from_all(self, user):
         try:
             self._coll.update_many(
-                filter=query,
+                filter={"users": user},
                 update={"$pull": {"users": user}}
             )
         except pymongo.errors.ConnectionFailure as err:
