@@ -3,6 +3,25 @@ from bottle import response
 import jsonschema.exceptions
 
 
+__all__ = [
+    'error_catcher',
+    'AlreadyAuthenticatedError',
+    'AuthenticationError',
+    'BaseError',
+    'BasicAuthenticationError',
+    'DuplicateResource',
+    'InvalidBody',
+    'InvalidFields',
+    'InvalidSelectors',
+    'ModelError',
+    'MongoConnError',
+    'PermError',
+    'ResourceNotFound',
+    'TokenError',
+    'ValidationError'
+]
+
+
 def error_catcher(func):
     def wrapper(*args, **kwargs):
         try:

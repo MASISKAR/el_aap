@@ -15,7 +15,8 @@ License: MIT (see LICENSE for details)
     packages=find_packages(),
     scripts=[
         'contrib/el_aap',
-        'contrib/el_aap_api'
+        'contrib/el_aap_api',
+        'contrib/el_aap_cli'
     ],
     url='https://github.com/schlitzered/pyredis',
     license='MIT',
@@ -31,6 +32,7 @@ License: MIT (see LICENSE for details)
         'bottle',
         'cachetools',
         'jsonschema',
+        'passlib',
         'pep3143daemon',
         'pymongo',
         'requests',
