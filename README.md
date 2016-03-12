@@ -37,7 +37,7 @@ Requirements
 
 Basic Installation
 ==================
-> pip install el_aap
+> pip install el-aap
 
 Configuration
 =============

@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='el_aap',
-    version='0.0.1',
+    name='el-aap',
+    version='0.0.2',
     description='Elasticsearch Authentication and Authorization Proxy',
     long_description="""
 Elasticsearch Authentication and Authorization reverse proxy
