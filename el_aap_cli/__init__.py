@@ -38,14 +38,14 @@ def main():
     permissions_get_parser.add_argument('--id', dest='id', action='store', required=True)
     permissions_update_parser = permissions_subparsers.add_parser('update', help='update permission rule')
     permissions_update_parser.add_argument('--id', dest='id', action='store', required=True)
-    permissions_update_parser.add_argument('--description', dest='description', action='store', required=True)
-    permissions_update_parser.add_argument('--scope', dest='scope', action='store', required=True)
+    permissions_update_parser.add_argument('--description', dest='description', action='store', default=None)
+    permissions_update_parser.add_argument('--scope', dest='scope', action='store', default=None)
     permissions_update_parser.add_argument(
-        '--permissions', dest='permissions', action='store', required=True,
+        '--permissions', dest='permissions', action='store', default=None,
         help='comma seperated list of enabled permissions for this rule'
     )
     permissions_update_parser.add_argument(
-        '--roles', dest='roles', action='store', required=True,
+        '--roles', dest='roles', action='store', default=None,
         help='comma seperated list of roles belonging to this rule'
     )
     permissions_search_parser = permissions_subparsers.add_parser('search', help='search permission rules')
@@ -110,9 +110,9 @@ def main():
     roles_get_parser.add_argument('--id', dest='id', action='store', required=True)
     roles_update_parser = roles_subparsers.add_parser('update', help='update role definition')
     roles_update_parser.add_argument('--id', dest='id', action='store', required=True)
-    roles_update_parser.add_argument('--description', dest='description', action='store', required=True)
+    roles_update_parser.add_argument('--description', dest='description', action='store', default=None)
     roles_update_parser.add_argument(
-        '--users', dest='users', action='store', required=True,
+        '--users', dest='users', action='store', default=None,
         help='comma seperated list of users ids that belong to this role'
     )
     roles_search_parser = roles_subparsers.add_parser('search', help='find roles')
@@ -152,10 +152,10 @@ def main():
     users_get_parser.add_argument('--id', dest='id', action='store', required=True)
     users_update_parser = users_subparsers.add_parser('update', help='update user')
     users_update_parser.add_argument('--id', dest='id', action='store', required=True)
-    users_update_parser.add_argument('--admin', dest='admin', action='store_true', required=False, default=False)
-    users_update_parser.add_argument('--email', dest='email', action='store', required=False)
-    users_update_parser.add_argument('--name', dest='name', action='store', required=False)
-    users_update_parser.add_argument('--password', dest='password', action='store', required=False)
+    users_update_parser.add_argument('--admin', dest='admin', action='store_true', default=None)
+    users_update_parser.add_argument('--email', dest='email', action='store', default=None)
+    users_update_parser.add_argument('--name', dest='name', action='store', default=None)
+    users_update_parser.add_argument('--password', dest='password', action='store', default=None)
     users_search_parser = users_subparsers.add_parser('search', help='find users')
     users_search_parser.add_argument('--id', dest='id', action='store', default=None)
 
@@ -315,6 +315,7 @@ class ElasticSearchAAPCLI(object):
         request = requests.post(self.endpoint+'elaap/api/v1/authenticate', json=login)
         if not request.status_code == 201:
             print('invalid login credentials specified')
+            sys.exit(1)
         session = {
             'sid': request.json()['_id'],
             'token': request.json()['token']

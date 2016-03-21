@@ -152,8 +152,7 @@ class ElasticSearchAAPAPI(object):
             if section.endswith(':mongopool'):
                 sectionname = section.rsplit(':', 1)[0]
                 pool = pymongo.MongoClient(
-                    host=self.config.get(section, 'host'),
-                    port=self.config.getint(section, 'port'),
+                    host=self.config.get(section, 'hosts'),
                     serverSelectionTimeoutMS=10
                 )
                 db = pool.get_database(self.config.get(section, 'db'))

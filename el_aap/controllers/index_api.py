@@ -1,10 +1,9 @@
 __author__ = 'schlitzer'
 
-from bottle import request
+from bottle import request, response
 import requests
 
 from el_aap.app import app, str_index, endpoint
-from el_aap_api.errors import *
 
 
 @app.put('/_template')
@@ -93,6 +92,7 @@ def delete(m_aa, _index):
     return r.json()
 
 
+@app.get('/_aliases')
 @app.get('/_analyze')
 @app.get('/_mapping')
 @app.get('/_segments')
@@ -100,7 +100,7 @@ def delete(m_aa, _index):
 @app.get('/_shard_stores')
 @app.get('/_stats')
 @app.get('/_stats/')
-@app.get('/_stats/<dummy_path>')
+@app.get('/_stats/<dummy:path>')
 @app.get('/_template/<dummy>')
 @app.get('/_all/_mapping')
 @app.get('/_all/_settings')

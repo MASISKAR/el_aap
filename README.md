@@ -57,10 +57,6 @@ host = 127.0.0.1
 port = 9200
 scheme = http
 
-#[console:logging]
-#acc_log = True
-#app_log = True
-
 [file:logging]
 acc_log = el_aap_access.log
 acc_retention = 7
@@ -69,11 +65,10 @@ app_retention = 7
 
 # "main" MongoDB connection pool
 [main:mongopool]
-host = 127.0.0.1
+hosts = mongodb://localhost:27017,localhost:27018
 db = el_aap
-#pass =
-#user =
-port = 27017
+# pass =
+# user =
 
 # the permissions collection should use the "main" MongoDB pool, and the collection name "permission"
 [permissions:mongocoll]
@@ -95,32 +90,21 @@ Example configuration for /etc/el_aap/el_aap_api.ini
 
 ```
 [main]
-dlog = el_aap.dlog
-port = 9201
-
-# Elasticsearch endpoint we like to secure.
-[elasticsearch]
-host = 127.0.0.1
-port = 9200
-scheme = http
-
-#[console:logging]
-#acc_log = True
-#app_log = True
+dlog = el_aap_api_.dlog
+port = 9000
 
 [file:logging]
-acc_log = el_aap_access.log
+acc_log = el_aap_api_access.log
 acc_retention = 7
-app_log = el_aap_error.log
+app_log = el_aap_api_error.log
 app_retention = 7
 
 # "main" MongoDB connection pool
 [main:mongopool]
-host = 127.0.0.1
+hosts = mongodb://localhost:27017,localhost:27018
 db = el_aap
-#pass =
-#user =
-port = 27017
+# pass =
+# user =
 
 # the permissions collection should use the "main" MongoDB pool, and the collection name "permission"
 [permissions:mongocoll]
@@ -194,7 +178,7 @@ Here we describe the usage of the el_aap_cli.
 
 To use the el_aap_cli tool, you have to create a file with the following content:
 
-~/.el_aap_cli.in
+~/.el_aap_cli.ini
 ```
 [main]
 endpoint = http://127.0.0.1:9000/

@@ -2,7 +2,7 @@ __author__ = 'schlitzer'
 
 import json
 
-from bottle import request
+from bottle import request, response
 import requests
 
 from el_aap.app import app, str_index, str_id, endpoint

@@ -2,11 +2,10 @@ __author__ = 'schlitzer'
 
 import json
 
-from bottle import request
+from bottle import request, response
 import requests
 
 from el_aap.app import app, app_logger, str_id, str_index, endpoint
-from el_aap_api.errors import *
 
 # bulk api
 @app.post('/_bulk')
