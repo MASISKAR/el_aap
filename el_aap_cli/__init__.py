@@ -142,7 +142,7 @@ def main():
 
     users_add_parser = users_subparsers.add_parser('add', help='add user')
     users_add_parser.add_argument('--id', dest='id', action='store', required=True)
-    users_add_parser.add_argument('--admin', dest='admin', action='store_true', required=True, default=False)
+    users_add_parser.add_argument('--admin', dest='admin', action='store_true', required=False, default=False)
     users_add_parser.add_argument('--email', dest='email', action='store', required=True)
     users_add_parser.add_argument('--name', dest='name', action='store', required=True)
     users_add_parser.add_argument('--password', dest='password', action='store', required=True)

@@ -62,6 +62,7 @@ acc_log = el_aap_access.log
 acc_retention = 7
 app_log = el_aap_error.log
 app_retention = 7
+app_loglevel = DEBUG
 
 # "main" MongoDB connection pool
 [main:mongopool]

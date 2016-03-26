@@ -14,13 +14,17 @@ from bottle import run
 from pep3143daemon import DaemonContext, PidFile
 import pymongo
 from requestlogger import WSGILogger, ApacheFormatter
+from wsgi_request_id import RequestID
 
 # Project
-from el_aap.app import app, app_logger, endpoint
+from el_aap.app import app, endpoint
 from el_aap.controllers import *
 from el_aap_api.models import *
 from el_aap.models import *
 from el_aap_api.errors import error_catcher
+
+
+app_logger = logging.getLogger('el_aap')
 
 
 def main():
@@ -85,15 +89,58 @@ class ElasticSearchAAP(object):
         self._pid = pid
         self._nodaemon = nodaemon
 
+    def _app_logging(self):
+        logfmt = logging.Formatter('%(asctime)sUTC - %(name)s - '
+                                   '%(levelname)s - %(message)s')
+        logfmt.converter = time.gmtime
+
+        app_handlers = []
+        try:
+            aap_level = self.config.get('file:logging', 'aap_loglevel')
+        except (configparser.NoOptionError, configparser.NoSectionError):
+            print('please configure app_loglevel in the file:logging section')
+            sys.exit(1)
+        try:
+            aap_log = self.config.get('file:logging', 'app_log')
+        except (configparser.NoOptionError, configparser.NoSectionError):
+            print('please configure app_log in the file:logging section')
+            sys.exit(1)
+        try:
+            app_retention = self.config.getint('file:logging', 'app_retention')
+        except (configparser.NoOptionError, configparser.NoSectionError):
+            print('please configure app_retention in the file:logging section')
+            sys.exit(1)
+        app_handlers.append(TimedRotatingFileHandler(aap_log, 'd', app_retention))
+
+        for handler in app_handlers:
+            handler.setFormatter(logfmt)
+            app_logger.addHandler(handler)
+        app_logger.setLevel(aap_level)
+        app_logger.debug("application logger is up")
+
     def _app(self, devel=False):
+        app_logger.info("starting up")
         self._setup_pools()
         self._setup_colls()
 
-        host = self.config.get('elasticsearch', 'host')
-        port = self.config.get('elasticsearch', 'port')
-        scheme = self.config.get('elasticsearch', 'scheme')
+        try:
+            host = self.config.get('elasticsearch', 'host')
+        except (configparser.NoOptionError, configparser.NoSectionError):
+            print('please configure the host in the elasticsearch section')
+            sys.exit(1)
+        try:
+            port = self.config.get('elasticsearch', 'port')
+        except (configparser.NoOptionError, configparser.NoSectionError):
+            print('please configure the port in the elasticsearch section')
+            sys.exit(1)
+        try:
+            scheme = self.config.get('elasticsearch', 'scheme')
+        except (configparser.NoOptionError, configparser.NoSectionError):
+            print('please configure the scheme in the elasticsearch section')
+            sys.exit(1)
 
         endpoint.endpoint = scheme+'://'+host+':'+port
+        app_logger.info("this instance is shielding {0}".format(endpoint.endpoint))
 
         permissions = Permissions(self._mongo_colls['permissions'])
         roles = Roles(self._mongo_colls['roles'])
@@ -103,11 +150,10 @@ class ElasticSearchAAP(object):
             roles=roles,
             permissions=permissions
         )
+        elproxy = ElasticSearchProxy(scheme+'://'+host+':'+port)
 
-        app.install(MetaPlugin(permissions, 'm_permissions'))
-        app.install(MetaPlugin(roles, 'm_roles'))
-        app.install(MetaPlugin(users, 'm_users'))
         app.install(MetaPlugin(aa, 'm_aa'))
+        app.install(MetaPlugin(elproxy, 'm_elproxy'))
         app.install(error_catcher)
 
         # access log logger
@@ -115,32 +161,34 @@ class ElasticSearchAAP(object):
 
         try:
             access_log = self.config.get('file:logging', 'acc_log')
-            access_retention = self.config.getint('file:logging', 'acc_retention')
-            acc_handlers.append(TimedRotatingFileHandler(access_log, 'd', access_retention))
         except (configparser.NoOptionError, configparser.NoSectionError):
-            pass
+            print('please configure the acc_log in the file:logging section')
+            sys.exit(1)
+        try:
+            access_retention = self.config.getint('file:logging', 'acc_retention')
+        except (configparser.NoOptionError, configparser.NoSectionError):
+            print('please configure the acc_retention in the file:logging section')
+            sys.exit(1)
+        acc_handlers.append(TimedRotatingFileHandler(access_log, 'd', access_retention))
 
-        logapp = WSGILogger(app, acc_handlers, ApacheFormatter())
+        app_logger.info("startup done, now serving")
 
-        # application logger
-        app_handlers = []
+        logapp = RequestID(WSGILogger(app, acc_handlers, ApacheFormatter()))
 
         try:
-            access_log = self.config.get('file:logging', 'app_log')
-            app_retention = self.config.getint('file:logging', 'app_retention')
-            app_handlers.append(TimedRotatingFileHandler(access_log, 'd', app_retention))
+            port = self.config.getint('main', 'port')
         except (configparser.NoOptionError, configparser.NoSectionError):
-            pass
+            print('please configure the port in the port section')
+            sys.exit(1)
 
-        for handler in app_handlers:
-            app_logger.addHandler(handler)
-
-        run(app=logapp, host='0.0.0.0', port=self.config.getint('main', 'port'), debug=devel, reloader=devel, server='waitress')
+        run(app=logapp, host='0.0.0.0', port=port, debug=devel, reloader=devel, server='waitress')
 
     def _setup_pools(self):
+        app_logger.info("setting up mongodb connection pools")
         for section in self.config.sections():
             if section.endswith(':mongopool'):
                 sectionname = section.rsplit(':', 1)[0]
+                app_logger.debug("setting up mongodb connection pool {0}".format(sectionname))
                 pool = pymongo.MongoClient(
                     host=self.config.get(section, 'hosts'),
                     serverSelectionTimeoutMS=10
@@ -150,17 +198,28 @@ class ElasticSearchAAP(object):
                     user = self.config.get(section, 'user')
                     password = self.config.get(section, 'pass')
                     db.authenticate(user, password)
+                    app_logger.debug("connection pool {0} is using authentication".format(sectionname))
                 except configparser.NoOptionError:
-                    pass
+                    app_logger.debug("connection pool {0} is not using authentication".format(sectionname))
                 self._mongo_pools[sectionname] = db
+                app_logger.debug("setting up mongodb connection pool {0} done".format(sectionname))
+        app_logger.info("setting up mongodb connection pools done")
 
     def _setup_colls(self):
+        app_logger.info("setting up mongodb collections")
         for section in self.config.sections():
             if section.endswith(':mongocoll'):
                 sectionname = section.rsplit(':', 1)[0]
-                pool = self._mongo_pools[self.config.get(section, 'pool')]
-                coll = pool.get_collection(self.config.get(section, 'coll'))
+                app_logger.debug("setting up mongodb collection {0}".format(sectionname))
+                pool_name = self.config.get(section, 'pool')
+                coll_name = self.config.get(section, 'coll')
+                app_logger.debug("mongodb collection {0} is using mongodb connection pool {1}".format(sectionname, pool_name))
+                app_logger.debug("mongodb collection {0} is using collection name {1}".format(sectionname, coll_name))
+                pool = self._mongo_pools[pool_name]
+                coll = pool.get_collection(coll_name)
                 self._mongo_colls[sectionname] = coll
+                app_logger.debug("setting up mongodb collection {0} done".format(sectionname))
+        app_logger.info("setting up mongodb collections done")
 
     @property
     def config(self):
@@ -192,8 +251,8 @@ class ElasticSearchAAP(object):
     def start(self, devel=False):
         self.config.read_file(open(self._config_file))
         if devel:
+            self._app_logging()
             self._app(devel=True)
-            return
         daemon = DaemonContext(pidfile=PidFile(self.pid))
         if self.nodaemon:
             daemon.detach_process = False
@@ -201,5 +260,5 @@ class ElasticSearchAAP(object):
         daemon.stderr = dlog
         daemon.stdout = dlog
         daemon.open()
-
+        self._app_logging()
         self._app()

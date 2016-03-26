@@ -1,12 +1,12 @@
 __author__ = 'schlitzer'
 
+import logging
 import re
 import threading
 
 from bottle import request, response
 from cachetools import TTLCache
 
-from el_aap.app import app_logger
 from el_aap_api.errors import *
 
 
@@ -23,8 +23,12 @@ class AuthenticationAuthorization(object):
         self.users = users
         self.roles = roles
         self.permissions = permissions
+        self.log = logging.getLogger('el_aap')
 
+    @method_wrapper
     def check_auth(self):
+        request_id = request.environ.get('REQUEST_ID', None)
+        self.log.debug("authenticating request {0}".format(request_id))
         user, password = request.auth or (None, None)
         if user is None or password is None:
             response.set_header('WWW-Authenticate',  'Basic realm="private"')
@@ -35,16 +39,20 @@ class AuthenticationAuthorization(object):
         }
         with self.cache_user_password_lock:
             if (user, password) in self.cache_user_password:
+                self.log.debug("successfully authenticated request {0} from cache".format(request_id))
                 return user
         try:
             self.users.check_credentials(credentials)
             with self.cache_user_password_lock:
                 self.cache_user_password[(user, password)] = user
+                self.log.debug("successfully authenticated request {0}".format(request_id))
             return user
         except AuthenticationError:
+            self.log.debug("failed authenticated request {0}".format(request_id))
             response.set_header('WWW-Authenticate',  'Basic realm="private"')
             raise BasicAuthenticationError
 
+    @method_wrapper
     def get_role_ids_by_user(self, user):
         with self.cache_user_roles_lock:
             if user in self.cache_user_roles:
@@ -56,6 +64,7 @@ class AuthenticationAuthorization(object):
             self.cache_user_roles[user] = roles
         return roles
 
+    @method_wrapper
     def get_permission_ids_by_role(self, role):
         with self.cache_role_permissions_lock:
             if role in self.cache_role_permissions:
@@ -67,6 +76,7 @@ class AuthenticationAuthorization(object):
             self.cache_role_permissions[role] = permissions
         return permissions
 
+    @method_wrapper
     def get_permissions(self, permissions):
         cached = list()
         non_cached = list()
@@ -86,6 +96,7 @@ class AuthenticationAuthorization(object):
             cached.append(permission)
         return cached
 
+    @method_wrapper
     def get_permissions_by_user(self, user):
         permission_ids = set()
         for role in self.get_role_ids_by_user(user):
@@ -95,15 +106,37 @@ class AuthenticationAuthorization(object):
         permissions = self.get_permissions(permission_ids)
         return permissions
 
+    @method_wrapper
     def require_permission(self, permission, index=None):
+        request_id = request.environ.get('REQUEST_ID', None)
         user_perms = self.get_permissions_by_user(self.check_auth())
+        self.log.debug("authorizing request {0}".format(request_id))
         for perm in user_perms:
             regex = perm['re']
             if index and not regex.match(index):
+                self.log.debug(
+                    "access denied for request {0}, permission rule {1} not matching"
+                    " {2} with regex {3}, testing next rule".format(
+                        request_id,
+                        perm['_id'],
+                        index,
+                        regex
+                    )
+                )
                 continue
             for priv in perm['permissions']:
                 if permission.startswith(priv):
+                    self.log.debug(
+                        "access granted for request {0}, permission rule {1} "
+                        "matching {2} with regex {3}".format(
+                            request_id,
+                            perm['_id'],
+                            index,
+                            regex
+                        )
+                    )
                     return True
+        self.log.info("failed authenticating request {0}, no more rules to try".format(request_id))
         raise PermError
 
 

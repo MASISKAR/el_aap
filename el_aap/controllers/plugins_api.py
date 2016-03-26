@@ -1,79 +1,32 @@
 __author__ = 'schlitzer'
 
-from bottle import request, response
-import requests
+import logging
 
-from el_aap.app import app, endpoint
+from el_aap.app import app
+
+app_logger = logging.getLogger('el_aap')
 
 
 @app.get('/_plugin/<dummy:path>')
-def plugin_get(m_aa, dummy=None):
+def get(m_aa, m_elproxy, dummy=None):
     m_aa.require_permission(':', '')
-    r = requests.get(
-        allow_redirects=False,
-        url=endpoint.endpoint+request.path,
-        params=request.query,
-        headers=request.headers,
-        data=request.body
-    )
-    response.status = r.status_code
-    for header, value in r.headers.items():
-        if header == 'Content-Length':
-            continue
-        response.set_header(header, value)
-    return r.content
+    return m_elproxy.get()
 
 
 @app.post('/_plugin/<dummy:path>')
-def plugin_post(m_aa, dummy=None):
+def post(m_aa, m_elproxy, dummy=None):
     m_aa.require_permission(':', '')
-    r = requests.post(
-        allow_redirects=False,
-        url=endpoint.endpoint+request.path,
-        params=request.query,
-        headers=request.headers,
-        data=request.body
-    )
-    response.status = r.status_code
-    for header, value in r.headers.items():
-        if header == 'Content-Length':
-            continue
-        response.set_header(header, value)
-    return r.content
+    return m_elproxy.post()
 
 
 @app.put('/_plugin/<dummy:path>')
-def plugin_put(m_aa, dummy=None):
+def put(m_aa, m_elproxy, dummy=None):
     m_aa.require_permission(':', '')
-    r = requests.put(
-        allow_redirects=False,
-        url=endpoint.endpoint+request.path,
-        params=request.query,
-        headers=request.headers,
-        data=request.body
-    )
-    response.status = r.status_code
-    for header, value in r.headers.items():
-        if header == 'Content-Length':
-            continue
-        response.set_header(header, value)
-    return r.content
+    return m_elproxy.put()
 
 
 @app.delete('/_plugin/<dummy:path>')
-def plugin_get(m_aa, dummy=None):
+def delete(m_aa, m_elproxy, dummy=None):
     m_aa.require_permission(':', '')
-    r = requests.delete(
-        allow_redirects=False,
-        url=endpoint.endpoint+request.path,
-        params=request.query,
-        headers=request.headers,
-        data=request.body
-    )
-    response.status = r.status_code
-    for header, value in r.headers.items():
-        if header == 'Content-Length':
-            continue
-        response.set_header(header, value)
-    return r.content
+    return m_elproxy.delete()
 

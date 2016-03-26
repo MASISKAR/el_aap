@@ -1,29 +1,19 @@
 __author__ = 'schlitzer'
 
 import json
+import logging
 
-from bottle import request, response
-import requests
+from bottle import request
 
-from el_aap.app import app, str_index, str_id, endpoint
+from el_aap.app import app, str_index, str_id
 from el_aap_api.errors import *
+
+app_logger = logging.getLogger('el_aap')
 
 
 @app.get(str_index+'/<_type>/'+str_id+'/count')
 @app.get(str_index+'/<_type>/'+str_id+'/_explain')
 @app.get(str_index+'/<_type>/'+str_id+'/_percolate')
-def get(m_aa, _index, _type, _id):
-    m_aa.require_permission(':index:crud:search', _index)
-    r = requests.get(
-            url=endpoint.endpoint+request.path,
-            params=request.query,
-            data=request.body
-    )
-    response.status = r.status_code
-    response.set_header('charset', 'UTF8')
-    return r.json()
-
-
 @app.get(str_index+'/_count')
 @app.get(str_index+'/<_type>/_count')
 @app.get(str_index+'/_field_stats')
@@ -36,17 +26,10 @@ def get(m_aa, _index, _type, _id):
 @app.get(str_index+'/<_type>/_search_shards')
 @app.get(str_index+'/_validate/query')
 @app.get(str_index+'/<_type>/_validate/query')
-def search_get(m_aa, _index, _type=None):
+def get(m_aa, m_elproxy, _index, _type=None, _id=None):
     for index in _index.split(','):
         m_aa.require_permission(':index:crud:search', index)
-    r = requests.get(
-            url=endpoint.endpoint+request.path,
-            params=request.query,
-            data=request.body
-    )
-    response.status = r.status_code
-    response.set_header('charset', 'UTF8')
-    return r.json()
+    return m_elproxy.get()
 
 
 @app.post(str_index+'/_count')
@@ -61,17 +44,10 @@ def search_get(m_aa, _index, _type=None):
 @app.post(str_index+'/<_type>/_search_shards')
 @app.post(str_index+'/_validate/query')
 @app.post(str_index+'/<_type>/_validate/query')
-def search_post(m_aa, _index, _type=None):
+def post(m_aa, m_elproxy, _index, _type=None):
     for index in _index.split(','):
         m_aa.require_permission(':index:crud:search', index)
-    r = requests.post(
-        url=endpoint.endpoint+request.path,
-        params=request.query,
-        data=request.body
-    )
-    response.status = r.status_code
-    response.set_header('charset', 'UTF8')
-    return r.json()
+    return m_elproxy.post()
 
 
 @app.get('/_count')
@@ -79,16 +55,9 @@ def search_post(m_aa, _index, _type=None):
 @app.get('/_search')
 @app.get('/_search/exists')
 @app.get('/_validate/query')
-def search_admin_get(m_aa):
+def admin_get(m_aa, m_elproxy):
     m_aa.require_permission(':', '')
-    r = requests.get(
-            url=endpoint.endpoint+request.path,
-            params=request.query,
-            data=request.body
-    )
-    response.status = r.status_code
-    response.set_header('charset', 'UTF8')
-    return r.json()
+    return m_elproxy.get()
 
 
 @app.post('/_count')
@@ -96,22 +65,18 @@ def search_admin_get(m_aa):
 @app.post('/_search')
 @app.post('/_search/exists')
 @app.post('/_validate/query')
-def search_admin_post(m_aa):
+def admin_post(m_aa, m_elproxy):
     m_aa.require_permission(':', '')
-    r = requests.post(
-            url=endpoint.endpoint+request.path,
-            params=request.query,
-            data=request.body
-    )
-    response.status = r.status_code
-    response.set_header('charset', 'UTF8')
-    return r.json()
+    return m_elproxy.post()
 
 
 @app.get('/_msearch')
 @app.get(str_index+'/_msearch')
 @app.get(str_index+'/<_type>/_msearch')
-def m_search(m_aa, _index=None, _type=None):
+@app.get('/_mpercolate')
+@app.get(str_index+'/_mpercolate')
+@app.get(str_index+'/<_type>/_mpercolate')
+def m_search(m_aa, m_elproxy, _index=None, _type=None):
     if _index:
         for index in _index.split(','):
             m_aa.require_permission(':index:crud:search', index)
@@ -128,54 +93,4 @@ def m_search(m_aa, _index=None, _type=None):
                 raise PermError
         header = False
     request.body.seek(0)
-    r = requests.get(
-        url=endpoint.endpoint+request.path,
-        params=request.query,
-        data=request.body
-    )
-    response.status = r.status_code
-    response.set_header('charset', 'UTF8')
-    return r.json()
-
-
-@app.get('/_mpercolate')
-@app.get(str_index+'/_mpercolate')
-@app.get(str_index+'/<_type>/_mpercolate')
-def m_search(m_aa, _index=None, _type=None):
-    if _index:
-        for index in _index.split(','):
-            m_aa.require_permission(':index:crud:search', index)
-    header = True
-    for data in request.body.readlines():
-        if not header:
-            header = True
-            continue
-        try:
-            for index in json.loads(data.decode('utf8'))['percolate']['index'].split(','):
-                m_aa.require_permission(':index:crud:search', index)
-        except (KeyError, ValueError):
-            if not _index:
-                raise PermError
-        header = False
-    request.body.seek(0)
-    r = requests.get(
-            url=endpoint.endpoint+request.path,
-            params=request.query,
-            data=request.body
-    )
-    response.status = r.status_code
-    response.set_header('charset', 'UTF8')
-    return r.json()
-
-
-@app.post('/_field_stats')
-def field_stats(m_aa):
-    m_aa.require_permission(':', '')
-    r = requests.post(
-            url=endpoint.endpoint+request.path,
-            params=request.query,
-            data=request.body
-    )
-    response.status = r.status_code
-    response.set_header('charset', 'UTF8')
-    return r.json()
+    return m_elproxy.get()

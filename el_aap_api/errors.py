@@ -1,10 +1,12 @@
 __author__ = 'schlitzer'
-from bottle import response
+import logging
+from bottle import request, response
 import jsonschema.exceptions
-
+import requests.packages.urllib3.exceptions
 
 __all__ = [
     'error_catcher',
+    'method_wrapper',
     'AlreadyAuthenticatedError',
     'AuthenticationError',
     'BaseError',
@@ -24,14 +26,42 @@ __all__ = [
 
 def error_catcher(func):
     def wrapper(*args, **kwargs):
+        log = logging.getLogger('el_aap')
+        request_id = request.environ.get('REQUEST_ID', None)
         try:
             try:
+                log.debug("entering module {0} function {1} request {2}".format(
+                    func.__module__, func.__name__, request_id)
+                )
                 return func(*args, **kwargs)
             except jsonschema.exceptions.ValidationError as err:
                 raise InvalidBody(err)
+            except requests.packages.urllib3.exceptions.HTTPError as err:
+                log.error('error communicating with ElasticSearch instance, request {0}'.format(request_id))
+                raise ElasticSearchConnError(err)
+            finally:
+                log.debug("leaving module {0} function {1} request {2}".format(
+                    func.__module__, func.__name__, request_id)
+                )
         except BaseError as err:
             response.status = err.status
             return err.errmsg
+    return wrapper
+
+
+def method_wrapper(func):
+    def wrapper(self, *args, **kwargs):
+        log = logging.getLogger('el_aap')
+        request_id = request.environ.get('REQUEST_ID', None)
+        log.debug("entering {0} method {1} request {2}".format(
+            self.__class__, func.__name__, request_id
+        ))
+        try:
+            return func(self, *args, **kwargs)
+        finally:
+            log.debug("leaving {0} method {1} request {2}".format(
+                self.__class__, func.__name__, request_id
+            ))
     return wrapper
 
 
@@ -52,6 +82,15 @@ class MongoConnError(BaseError):
             status=500,
             code=1001,
             msg="MongoDB connection error: {0}".format(err)
+        )
+
+
+class ElasticSearchConnError(BaseError):
+    def __init__(self, err):
+        super().__init__(
+            status=500,
+            code=1002,
+            msg="ElasticSearch connection error: {0}".format(err)
         )
 
 
