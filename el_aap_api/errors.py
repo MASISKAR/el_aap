@@ -2,6 +2,7 @@ __author__ = 'schlitzer'
 import logging
 from bottle import request, response
 import jsonschema.exceptions
+import pymongo.errors
 import requests.packages.urllib3.exceptions
 
 __all__ = [
@@ -30,18 +31,21 @@ def error_catcher(func):
         request_id = request.environ.get('REQUEST_ID', None)
         try:
             try:
-                log.debug("entering module {0} function {1} request {2}".format(
-                    func.__module__, func.__name__, request_id)
+                log.debug("{0} entering module {1} function {2}".format(
+                    request_id, func.__module__, func.__name__)
                 )
                 return func(*args, **kwargs)
             except jsonschema.exceptions.ValidationError as err:
                 raise InvalidBody(err)
             except requests.packages.urllib3.exceptions.HTTPError as err:
-                log.error('error communicating with ElasticSearch instance, request {0}'.format(request_id))
+                log.error('{0} error communicating with ElasticSearch instance: {1}'.format(request_id, err))
                 raise ElasticSearchConnError(err)
+            except pymongo.errors.ConnectionFailure as err:
+                log.error('{0} error communicating with MongoDB: {1}'.format(request_id, err))
+                raise MongoConnError(err)
             finally:
-                log.debug("leaving module {0} function {1} request {2}".format(
-                    func.__module__, func.__name__, request_id)
+                log.debug("{0} leaving module {1} function {2}".format(
+                    request_id, func.__module__, func.__name__)
                 )
         except BaseError as err:
             response.status = err.status
@@ -53,14 +57,14 @@ def method_wrapper(func):
     def wrapper(self, *args, **kwargs):
         log = logging.getLogger('el_aap')
         request_id = request.environ.get('REQUEST_ID', None)
-        log.debug("entering {0} method {1} request {2}".format(
-            self.__class__, func.__name__, request_id
+        log.debug("{0} entering {1} method {2}".format(
+            request_id, self.__class__, func.__name__
         ))
         try:
             return func(self, *args, **kwargs)
         finally:
-            log.debug("leaving {0} method {1} request {2}".format(
-                self.__class__, func.__name__, request_id
+            log.debug("{0} leaving {1} method {2}".format(
+                request_id, self.__class__, func.__name__
             ))
     return wrapper
 

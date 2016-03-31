@@ -1,14 +1,11 @@
 __author__ = 'schlitzer'
 
 import json
-import logging
 
 from bottle import request
 
 from el_aap.app import app, str_index, str_id
 from el_aap_api.errors import *
-
-app_logger = logging.getLogger('el_aap')
 
 
 @app.get(str_index+'/<_type>/'+str_id+'/count')

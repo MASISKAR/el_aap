@@ -1,5 +1,8 @@
 __author__ = 'schlitzer'
 
+import logging
+
+from bottle import request
 import pymongo
 import pymongo.errors
 
@@ -15,114 +18,129 @@ class Roles(FilterMixIN, ProjectionMixIn):
             'users': 1
         }
         self._coll = coll
+        self.log = logging.getLogger('el_aap')
 
+    @method_wrapper
     def add_users(self, _id, users):
+        request_id = request.environ.get('REQUEST_ID', None)
+        self.log.info('{0} add users {1} to role resource {2}'.format(request_id, users, _id))
         update = {'$addToSet': {"users": {"$each": users}}}
-        try:
-            result = self._coll.find_one_and_update(
-                filter={'_id': _id},
-                update=update,
-                projection=self._projection(),
-                return_document=pymongo.ReturnDocument.AFTER
-            )
-        except pymongo.errors.ConnectionFailure as err:
-            raise MongoConnError(err)
+        result = self._coll.find_one_and_update(
+            filter={'_id': _id},
+            update=update,
+            projection=self._projection(),
+            return_document=pymongo.ReturnDocument.AFTER
+        )
         if result is None:
+            self.log.warn('{0} role resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
+        self.log.info('{0} success updating role resource {1}'.format(request_id, _id))
         return result
 
+    @method_wrapper
     def check_ids(self, _ids):
-        try:
-            count = self._coll.find(
-                    filter={'_id': {'$in': _ids}},
-                    projection={'id': 1}).count()
-            return len(_ids) == count
-        except pymongo.errors.ConnectionFailure as err:
-            raise MongoConnError(err)
+        request_id = request.environ.get('REQUEST_ID', None)
+        self.log.debug('{0} checking if role ids {1} exist'.format(request_id, _ids))
+        count = self._coll.find(
+                filter={'_id': {'$in': _ids}},
+                projection={'id': 1}).count()
+        return len(_ids) == count
 
+    @method_wrapper
     def create(self, role):
+        request_id = request.environ.get('REQUEST_ID', None)
+        self.log.info('{0} creating new role resource {1}'.format(request_id), role['_id'])
         try:
             self._coll.insert_one(role)
         except pymongo.errors.DuplicateKeyError:
+            self.log.warn('{0} role resource {1} already exists'.format(request_id, role['_id']))
             raise DuplicateResource(role['_id'])
-        except pymongo.errors.ConnectionFailure as err:
-            raise MongoConnError(err)
-
+        self.log.info('{0} success creating new role resource {1}'.format(request_id), role['_id'])
         return self.get(role['_id'])
 
+    @method_wrapper
     def delete(self, _id):
-        try:
-            result = self._coll.delete_one(filter={'_id': _id})
-        except pymongo.errors.ConnectionFailure as err:
-            raise MongoConnError(err)
+        request_id = request.environ.get('REQUEST_ID', None)
+        self.log.info('{0} deleting role resource {1}'.format(request_id), _id)
+        result = self._coll.delete_one(filter={'_id': _id})
         if result.deleted_count is 0:
+            self.log.warn('{0} role resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
+        self.log.info('{0} success deleting role resource {1}'.format(request_id), _id)
         return
 
+    @method_wrapper
     def get(self, _id, fields=None):
-        try:
-            result = self._coll.find_one(
-                    filter={'_id': _id},
-                    projection=self._projection(fields)
-            )
-            if result is None:
-                raise ResourceNotFound(_id)
-            return result
-        except pymongo.errors.ConnectionFailure as err:
-            raise MongoConnError(err)
-
-    def remove_users(self, _id, users):
-        update = {"$pullAll": {"users": users}}
-        try:
-            result = self._coll.find_one_and_update(
+        request_id = request.environ.get('REQUEST_ID', None)
+        self.log.info('{0} fetching role resource {1}'.format(request_id), _id)
+        result = self._coll.find_one(
                 filter={'_id': _id},
-                update=update,
-                projection=self._projection(),
-                return_document=pymongo.ReturnDocument.AFTER
-            )
-        except pymongo.errors.ConnectionFailure as err:
-            raise MongoConnError(err)
+                projection=self._projection(fields)
+        )
         if result is None:
+            self.log.warn('{0} role resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
+        self.log.info('{0} success fetching role resource {1}'.format(request_id), _id)
         return result
 
-    def remove_user_from_all(self, user):
-        try:
-            self._coll.update_many(
-                filter={"users": user},
-                update={"$pull": {"users": user}}
-            )
-        except pymongo.errors.ConnectionFailure as err:
-            raise MongoConnError(err)
+    @method_wrapper
+    def remove_users(self, _id, users):
+        request_id = request.environ.get('REQUEST_ID', None)
+        self.log.info('{0} remove users {1} to role resource {2}'.format(request_id, users, _id))
+        update = {"$pullAll": {"users": users}}
+        result = self._coll.find_one_and_update(
+            filter={'_id': _id},
+            update=update,
+            projection=self._projection(),
+            return_document=pymongo.ReturnDocument.AFTER
+        )
+        if result is None:
+            self.log.warn('{0} role resource {1} not found'.format(request_id, _id))
+            raise ResourceNotFound(_id)
+        self.log.info('{0} success updating role resource {1}'.format(request_id, _id))
+        return result
 
+    @method_wrapper
+    def remove_user_from_all(self, user):
+        request_id = request.environ.get('REQUEST_ID', None)
+        self.log.debug('{0} removing user {1} from all role resources'.format(request_id, user))
+        self._coll.update_many(
+            filter={"users": user},
+            update={"$pull": {"users": user}}
+        )
+        self.log.debug('{0} success removing user {1} from all role resources'.format(request_id, user))
+
+    @method_wrapper
     def search(self, _ids=None, users=None, fields=None):
+        request_id = request.environ.get('REQUEST_ID', None)
+        self.log.info('{0} executing role resource search'.format(request_id))
         query = {}
         self._filter_builder_re(query, '_id', _ids)
         self._filter_builder_list(query, 'users', users)
-        try:
-            result = []
-            for item in self._coll.find(
-                    filter=query,
-                    projection=self._projection(fields)
-            ):
-                result.append(item)
-            return {'results': result}
-        except pymongo.errors.ConnectionFailure as err:
-            raise MongoConnError(err)
+        result = []
+        for item in self._coll.find(
+                filter=query,
+                projection=self._projection(fields)
+        ):
+            result.append(item)
+        self.log.info('{0} success executing role resource search, found {1} items'.format(request_id, len(result)))
+        return {'results': result}
 
+    @method_wrapper
     def update(self, _id, delta):
+        request_id = request.environ.get('REQUEST_ID', None)
+        self.log.info('{0} updating role resource {1}'.format(request_id, _id))
         update = {'$set': {}}
         for k, v in delta.items():
             update['$set'][k] = v
-        try:
-            result = self._coll.find_one_and_update(
-                filter={'_id': _id},
-                update=update,
-                projection=self._projection(),
-                return_document=pymongo.ReturnDocument.AFTER
+        result = self._coll.find_one_and_update(
+            filter={'_id': _id},
+            update=update,
+            projection=self._projection(),
+            return_document=pymongo.ReturnDocument.AFTER
             )
-        except pymongo.errors.ConnectionFailure as err:
-            raise MongoConnError(err)
         if result is None:
+            self.log.warn('{0} role resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
+        self.log.info('{0} success updating role resource {1}'.format(request_id, _id))
         return result

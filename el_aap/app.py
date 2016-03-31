@@ -8,26 +8,9 @@ from bottle import Bottle, request, response
 # but not recommended, but we do not allow it here.
 str_index = '/<_index:re:[a-zA-Z0-9\.]{1}[a-zA-Z0-9_\-\.,]*>'
 str_id = '<_id:re:[a-zA-Z0-9\.]{1}[a-zA-Z0-9_\-\.]*>'
-#str_index = '/<_index:re:[^_].*>'
-#str_id = '<_id:re:[^_].*>'
-#str_index = '/<_index>'
-#str_id = '<_id>'
-
-
-class Endpoint(object):
-    def __init__(self):
-        self._endpoint = None
-
-    @property
-    def endpoint(self):
-        return self._endpoint
-
-    @endpoint.setter
-    def endpoint(self, endpoint):
-        self._endpoint = endpoint
-
+#str_index = '/<_index:re:(?!_)>'
+#str_id = '<_id:re:(?!_)>'
 
 app = Bottle()
-endpoint = Endpoint()
 
 

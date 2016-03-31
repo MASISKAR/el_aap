@@ -16,7 +16,6 @@ The project is in a very early stage, but all features have been tested and seem
 
 TODO:
  - write tests
- - create a frontend that is not swagger
 
 The code has been developed  and tested on python3.4
 

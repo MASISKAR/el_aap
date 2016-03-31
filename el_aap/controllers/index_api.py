@@ -1,12 +1,6 @@
 __author__ = 'schlitzer'
 
-import logging
-
-from bottle import request
-
 from el_aap.app import app, str_index
-
-app_logger = logging.getLogger('el_aap')
 
 
 @app.put('/_template/<dummy>')

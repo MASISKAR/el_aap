@@ -1,10 +1,6 @@
 __author__ = 'schlitzer'
 
-import logging
-
 from el_aap.app import app
-
-app_logger = logging.getLogger('el_aap')
 
 
 @app.get('/_plugin/<dummy:path>')

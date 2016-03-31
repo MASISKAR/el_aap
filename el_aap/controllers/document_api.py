@@ -1,13 +1,10 @@
 __author__ = 'schlitzer'
 
 import json
-import logging
 
 from bottle import request
 
 from el_aap.app import app, str_id, str_index
-
-app_logger = logging.getLogger('el_aap')
 
 
 @app.post('/_bulk')

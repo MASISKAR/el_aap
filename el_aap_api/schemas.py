@@ -7,7 +7,7 @@ SAMPLE = {
   "properties": {
     "_id": {
       "type": "string",
-      "pattern": "^([a-zA-Z0-9]|_|\\.|-){8,64}$"
+      "pattern": "^(?!_)[a-zA-Z0-9_\-\.]{8,64}"
     },
     "description": {
       "type": "string",
@@ -18,7 +18,7 @@ SAMPLE = {
       "required": False,
       "items": {
         "type": "string",
-        "pattern": "^([a-zA-Z0-9]|_|\\.|-){8,64}$",
+        "pattern": "^(?!_)[a-zA-Z0-9_\-\.]{8,64}",
         "uniqueItems": True,
         "enum": [
           "blargggg1",
@@ -37,7 +37,7 @@ PERMISSIONS_CREATE = {
     "properties": {
         "_id": {
             "type": "string",
-            "pattern": "^([a-zA-Z0-9]|_|\.|-){8,64}$"
+            "pattern": "^(?!_)[a-zA-Z0-9_\-\.]{8,64}",
         },
         "description": {
             "type": "string",
@@ -67,7 +67,7 @@ PERMISSIONS_CREATE = {
             "type": "array",
             "items": {
                 "type": "string",
-                "pattern": "^([a-zA-Z0-9]|_|\.|-){8,64}$",
+                "pattern": "^(?!_)[a-zA-Z0-9_\-\.]{8,64}",
                 "minItems": 0
             }
         },
@@ -115,7 +115,7 @@ PERMISSIONS_UPDATE = {
             "type": "array",
             "items": {
                 "type": "string",
-                "pattern": "^([a-zA-Z0-9]|_|\.|-){8,64}$",
+                "pattern": "^(?!_)[a-zA-Z0-9_\-\.]{8,64}",
                 "minItems": 0
             }
         },
@@ -132,7 +132,7 @@ ROLES_CREATE = {
     "properties": {
         "_id": {
             "type": "string",
-            "pattern": "^([a-zA-Z0-9]|_|\.|-){8,64}$"
+            "pattern": "^(?!_)[a-zA-Z0-9_\-\.]{8,64}",
         },
         "description": {
             "type": "string",
@@ -141,7 +141,7 @@ ROLES_CREATE = {
             "type": "array",
             "items": {
                 "type": "string",
-                "pattern": "^([a-zA-Z0-9]|_|\.|-){8,64}$",
+                "pattern": "^(?!_)[a-zA-Z0-9_\-\.]{8,64}",
                 "minItems": 0
             }
         }
@@ -163,7 +163,7 @@ ROLES_UPDATE = {
             "type": "array",
             "items": {
                 "type": "string",
-                "pattern": "^([a-zA-Z0-9]|_|\.|-){8,64}$",
+                "pattern": "^(?!_)[a-zA-Z0-9_\-\.]{8,64}",
                 "minItems": 0
             }
         }
@@ -200,7 +200,7 @@ USERS_CREATE = {
     "properties": {
         "_id": {
             "type": "string",
-            "pattern": "^([a-zA-Z0-9]|_|\.|-){8,64}$"
+            "pattern": "^(?!_)[a-zA-Z0-9_\-\.]{8,64}",
         },
         "admin": {
             "type": "boolean",
@@ -231,7 +231,7 @@ USERS_CREDENTIALS = {
         },
         "user": {
             "type": "string",
-            "pattern": "^([a-zA-Z0-9]|_|\.|-){8,64}$"
+            "pattern": "^(?!_)[a-zA-Z0-9_\-\.]{8,64}",
         }
     }
 }
