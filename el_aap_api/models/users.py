@@ -62,25 +62,25 @@ class Users(FilterMixIN, ProjectionMixIn):
     @method_wrapper
     def create(self, user):
         request_id = request.environ.get('REQUEST_ID', None)
-        self.log.info('{0} creating new user resource {1}'.format(request_id), user['_id'])
+        self.log.info('{0} creating new user resource {1}'.format(request_id, user['_id']))
         user['password'] = self._password(user['password'])
         try:
             self._coll.insert_one(user)
         except pymongo.errors.DuplicateKeyError:
             self.log.warn('{0} user resource {1} already exists'.format(request_id, user['_id']))
             raise DuplicateResource(user['_id'])
-        self.log.info('{0} success creating new user resource {1}'.format(request_id), user['_id'])
+        self.log.info('{0} success creating new user resource {1}'.format(request_id, user['_id']))
         return self.get(user['_id'])
 
     @method_wrapper
     def delete(self, _id):
         request_id = request.environ.get('REQUEST_ID', None)
-        self.log.info('{0} deleting user resource {1}'.format(request_id), _id)
+        self.log.info('{0} deleting user resource {1}'.format(request_id, _id))
         result = self._coll.delete_one(filter={'_id': _id})
         if result.deleted_count is 0:
             self.log.warn('{0} user resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
-        self.log.info('{0} success deleting user resource {1}'.format(request_id), _id)
+        self.log.info('{0} success deleting user resource {1}'.format(request_id, _id))
         return
 
     @method_wrapper

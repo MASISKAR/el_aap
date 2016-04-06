@@ -59,7 +59,7 @@ class Permissions(FilterMixIN, ProjectionMixIn):
     @method_wrapper
     def create(self, permission):
         request_id = request.environ.get('REQUEST_ID', None)
-        self.log.info('{0} creating new permission resource {1}'.format(request_id), permission['_id'])
+        self.log.info('{0} creating new permission resource {1}'.format(request_id, permission['_id']))
         try:
             self._coll.insert_one(permission)
         except pymongo.errors.DuplicateKeyError:
@@ -71,18 +71,18 @@ class Permissions(FilterMixIN, ProjectionMixIn):
     @method_wrapper
     def delete(self, _id):
         request_id = request.environ.get('REQUEST_ID', None)
-        self.log.info('{0} deleting permission resource {1}'.format(request_id), _id)
+        self.log.info('{0} deleting permission resource {1}'.format(request_id, _id))
         result = self._coll.delete_one(filter={'_id': _id})
         if result.deleted_count is 0:
             self.log.warn('{0} permission resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
-        self.log.info('{0} success deleting permission resource {1}'.format(request_id), _id)
+        self.log.info('{0} success deleting permission resource {1}'.format(request_id, _id))
         return
 
     @method_wrapper
     def get(self, _id, fields=None):
         request_id = request.environ.get('REQUEST_ID', None)
-        self.log.info('{0} fetching permission resource {1}'.format(request_id), _id)
+        self.log.info('{0} fetching permission resource {1}'.format(request_id, _id))
         result = self._coll.find_one(
             filter={'_id': _id},
             projection=self._projection(fields)
@@ -91,7 +91,7 @@ class Permissions(FilterMixIN, ProjectionMixIn):
             self.log.warn('{0} permission resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         result['_id'] = _id
-        self.log.info('{0} success fetching permission resource {1}'.format(request_id), _id)
+        self.log.info('{0} success fetching permission resource {1}'.format(request_id, _id))
         return result
 
     @method_wrapper
@@ -108,7 +108,7 @@ class Permissions(FilterMixIN, ProjectionMixIn):
         if result is None:
             self.log.warn('{0} permission resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
-        self.log.info('{0} success updating permission resource {1}'.format(request_id), _id)
+        self.log.info('{0} success updating permission resource {1}'.format(request_id, _id))
         return result
 
     @method_wrapper
@@ -125,7 +125,7 @@ class Permissions(FilterMixIN, ProjectionMixIn):
         if result is None:
             self.log.warn('{0} permission resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
-        self.log.info('{0} success updating permission resource {1}'.format(request_id), _id)
+        self.log.info('{0} success updating permission resource {1}'.format(request_id, _id))
         return result
 
     @method_wrapper

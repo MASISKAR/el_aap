@@ -49,30 +49,30 @@ class Roles(FilterMixIN, ProjectionMixIn):
     @method_wrapper
     def create(self, role):
         request_id = request.environ.get('REQUEST_ID', None)
-        self.log.info('{0} creating new role resource {1}'.format(request_id), role['_id'])
+        self.log.info('{0} creating new role resource {1}'.format(request_id, role['_id']))
         try:
             self._coll.insert_one(role)
         except pymongo.errors.DuplicateKeyError:
             self.log.warn('{0} role resource {1} already exists'.format(request_id, role['_id']))
             raise DuplicateResource(role['_id'])
-        self.log.info('{0} success creating new role resource {1}'.format(request_id), role['_id'])
+        self.log.info('{0} success creating new role resource {1}'.format(request_id, role['_id']))
         return self.get(role['_id'])
 
     @method_wrapper
     def delete(self, _id):
         request_id = request.environ.get('REQUEST_ID', None)
-        self.log.info('{0} deleting role resource {1}'.format(request_id), _id)
+        self.log.info('{0} deleting role resource {1}'.format(request_id, _id))
         result = self._coll.delete_one(filter={'_id': _id})
         if result.deleted_count is 0:
             self.log.warn('{0} role resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
-        self.log.info('{0} success deleting role resource {1}'.format(request_id), _id)
+        self.log.info('{0} success deleting role resource {1}'.format(request_id, _id))
         return
 
     @method_wrapper
     def get(self, _id, fields=None):
         request_id = request.environ.get('REQUEST_ID', None)
-        self.log.info('{0} fetching role resource {1}'.format(request_id), _id)
+        self.log.info('{0} fetching role resource {1}'.format(request_id, _id))
         result = self._coll.find_one(
                 filter={'_id': _id},
                 projection=self._projection(fields)
@@ -80,7 +80,7 @@ class Roles(FilterMixIN, ProjectionMixIn):
         if result is None:
             self.log.warn('{0} role resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
-        self.log.info('{0} success fetching role resource {1}'.format(request_id), _id)
+        self.log.info('{0} success fetching role resource {1}'.format(request_id, _id))
         return result
 
     @method_wrapper
