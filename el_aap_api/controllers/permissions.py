@@ -9,8 +9,8 @@ from el_aap_api.schemas import *
 
 
 @app.get('/elaap/api/v1/permissions/_search')
-def search(m_permissions, m_sessions, m_users):
-    m_users.require_admin(m_sessions.get_user())
+def search(m_aa, m_permissions):
+    m_aa.require_admin()
     return m_permissions.search(
         _ids=request.query.get('_id', None),
         permissions=request.query.get('permissions', None),
@@ -21,9 +21,9 @@ def search(m_permissions, m_sessions, m_users):
 
 
 @app.post('/elaap/api/v1/permissions')
-def create(m_permissions, m_sessions, m_users, m_roles):
+def create(m_aa, m_permissions, m_roles):
+    m_aa.require_admin()
     jsonschema.validate(request.json, PERMISSIONS_CREATE, format_checker=jsonschema.draft4_format_checker)
-    m_users.require_admin(m_sessions.get_user())
     if 'roles' in request.json:
         if not m_roles.check_ids(request.json['roles']):
             raise InvalidBody('some roles missing')
@@ -33,15 +33,15 @@ def create(m_permissions, m_sessions, m_users, m_roles):
 
 
 @app.get('/elaap/api/v1/permissions/<permission>')
-def get(m_permissions, m_sessions, m_users, permission):
-    m_users.require_admin(m_sessions.get_user())
+def get(m_aa, m_permissions, permission):
+    m_aa.require_admin()
     return m_permissions.get(permission, request.query.get('f', None))
 
 
 @app.put('/elaap/api/v1/permissions/<permission>')
-def update(m_permissions, m_sessions, m_users, m_roles, permission):
+def update(m_aa, m_permissions, m_roles, permission):
+    m_aa.require_admin()
     jsonschema.validate(request.json, PERMISSIONS_UPDATE, format_checker=jsonschema.draft4_format_checker)
-    m_users.require_admin(m_sessions.get_user())
     if 'roles' in request.json:
         if not m_roles.check_ids(request.json['roles']):
             raise InvalidBody('some roles missing')
@@ -49,18 +49,18 @@ def update(m_permissions, m_sessions, m_users, m_roles, permission):
 
 
 @app.put('/elaap/api/v1/permissions/<permission>/permissions')
-def update_permissions(m_permissions, m_sessions, m_users, permission):
+def update_permissions(m_aa, m_permissions, permission):
+    m_aa.require_admin()
     if not type(request.json) == list:
         raise InvalidBody("must be of type list")
     schematest = {'permissions': request.json}
     jsonschema.validate(schematest, PERMISSIONS_UPDATE, format_checker=jsonschema.draft4_format_checker)
-    m_users.require_admin(m_sessions.get_user())
     return m_permissions.add_permissions(permission, request.json)
 
 
 @app.put('/elaap/api/v1/permissions/<permission>/roles')
-def update_roles(m_permissions, m_sessions, m_users, m_roles, permission):
-    m_users.require_admin(m_sessions.get_user())
+def update_roles(m_aa, m_permissions, m_roles, permission):
+    m_aa.require_admin()
     if type(request.json) == list:
         if not m_roles.check_ids(request.json):
             raise InvalidBody('some roles missing')
@@ -70,24 +70,24 @@ def update_roles(m_permissions, m_sessions, m_users, m_roles, permission):
 
 
 @app.delete('/elaap/api/v1/permissions/<permission>')
-def delete(m_permissions, m_sessions, m_users, permission):
-    m_users.require_admin(m_sessions.get_user())
+def delete(m_aa, m_permissions, permission):
+    m_aa.require_admin()
     return m_permissions.delete(permission)
 
 
 @app.delete('/elaap/api/v1/permissions/<permission>/permissions')
-def delete_permissions(m_permissions, m_sessions, m_users, permission):
+def delete_permissions(m_aa, m_permissions, permission):
+    m_aa.require_admin()
     if not type(request.json) == list:
         raise InvalidBody("must be of type list")
     schematest = {'permissions': request.json}
     jsonschema.validate(schematest, PERMISSIONS_UPDATE, format_checker=jsonschema.draft4_format_checker)
-    m_users.require_admin(m_sessions.get_user())
     return m_permissions.remove_permissions(permission, request.json)
 
 
 @app.delete('/elaap/api/v1/permissions/<permission>/roles')
-def delete_roles(m_permissions, m_sessions, m_users, permission):
+def delete_roles(m_aa, m_permissions, permission):
+    m_aa.require_admin()
     if not type(request.json) == list:
         raise InvalidBody("must be of type list")
-    m_users.require_admin(m_sessions.get_user())
     return m_permissions.remove_roles(permission, request.json)

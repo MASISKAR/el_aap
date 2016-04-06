@@ -6,11 +6,11 @@ from bottle import request
 import pymongo
 import pymongo.errors
 
-from el_aap_api.models.mixins import FilterMixIN, ProjectionMixIn
+from el_aap_api.models.mixins import FilterMixIn, ProjectionMixIn
 from el_aap_api.errors import *
 
 
-class Permissions(FilterMixIN, ProjectionMixIn):
+class Permissions(FilterMixIn, ProjectionMixIn):
     def __init__(self, coll):
         self.defaultfields = {
             '_id': 1,
@@ -143,10 +143,10 @@ class Permissions(FilterMixIN, ProjectionMixIn):
         request_id = request.environ.get('REQUEST_ID', None)
         self.log.info('{0} executing permission resource search'.format(request_id))
         query = {}
-        self._filter_builder_re(query, '_id', _ids)
-        self._filter_builder_list(query, 'permissions', permissions)
-        self._filter_builder_list(query, 'scope', scope)
-        self._filter_builder_list(query, 'roles', roles)
+        self._filter_re(query, '_id', _ids)
+        self._filter_list(query, 'permissions', permissions)
+        self._filter_list(query, 'scope', scope)
+        self._filter_list(query, 'roles', roles)
         result = []
         for item in self._coll.find(
                 filter=query,

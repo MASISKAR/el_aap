@@ -20,7 +20,7 @@ __all__ = [
     'MongoConnError',
     'PermError',
     'ResourceNotFound',
-    'TokenError',
+    'SessionError',
     'ValidationError'
 ]
 
@@ -133,12 +133,12 @@ class AlreadyAuthenticatedError(ModelError):
         )
 
 
-class TokenError(ModelError):
+class SessionError(ModelError):
     def __init__(self):
         super().__init__(
             status=403,
             code=1004,
-            msg="Invalid or expired token"
+            msg="Invalid or expired session"
         )
 
 

@@ -7,11 +7,11 @@ from passlib.hash import pbkdf2_sha512
 import pymongo
 import pymongo.errors
 
-from el_aap_api.models.mixins import FilterMixIN, ProjectionMixIn
+from el_aap_api.models.mixins import FilterMixIn, ProjectionMixIn
 from el_aap_api.errors import *
 
 
-class Users(FilterMixIN, ProjectionMixIn):
+class Users(FilterMixIn, ProjectionMixIn):
     def __init__(self, coll):
         self.defaultfields = {
             '_id': 1,
@@ -124,8 +124,8 @@ class Users(FilterMixIN, ProjectionMixIn):
         request_id = request.environ.get('REQUEST_ID', None)
         self.log.info('{0} executing user resource search'.format(request_id))
         query = {}
-        self._filter_builder_re(query, '_id', _ids)
-        self._filter_builder_boolean(query, 'admin', admin)
+        self._filter_re(query, '_id', _ids)
+        self._filter_boolean(query, 'admin', admin)
         result = []
         for item in self._coll.find(
             filter=query,

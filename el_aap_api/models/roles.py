@@ -6,11 +6,11 @@ from bottle import request
 import pymongo
 import pymongo.errors
 
-from el_aap_api.models.mixins import FilterMixIN, ProjectionMixIn
+from el_aap_api.models.mixins import FilterMixIn, ProjectionMixIn
 from el_aap_api.errors import *
 
 
-class Roles(FilterMixIN, ProjectionMixIn):
+class Roles(FilterMixIn, ProjectionMixIn):
     def __init__(self, coll):
         self.defaultfields = {
             '_id': 1,
@@ -115,8 +115,8 @@ class Roles(FilterMixIN, ProjectionMixIn):
         request_id = request.environ.get('REQUEST_ID', None)
         self.log.info('{0} executing role resource search'.format(request_id))
         query = {}
-        self._filter_builder_re(query, '_id', _ids)
-        self._filter_builder_list(query, 'users', users)
+        self._filter_re(query, '_id', _ids)
+        self._filter_list(query, 'users', users)
         result = []
         for item in self._coll.find(
                 filter=query,

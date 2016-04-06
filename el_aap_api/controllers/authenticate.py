@@ -19,13 +19,13 @@ def create(m_users, m_sessions):
 
 
 @app.delete('/elaap/api/v1/authenticate')
-def delete(m_sessions):
-    token = m_sessions.get_token()
+def delete(m_sessions, m_aa):
     response.delete_cookie('_id')
     response.delete_cookie('token')
-    return m_sessions.delete(token['_id'])
+    session = m_aa.get_session()
+    return m_sessions.delete(session['_id'])
 
 
 @app.get('/elaap/api/v1/authenticate')
-def verify(m_sessions):
-    return m_sessions.get_user()
+def verify(m_aa):
+    return m_aa.get_user()

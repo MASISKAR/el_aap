@@ -17,10 +17,10 @@ class ProjectionMixIn(object):
         return result
 
 
-class FilterMixIN(object):
+class FilterMixIn(object):
     @staticmethod
-    def _filter_builder_boolean(query, field, selector):
-        if not selector:
+    def _filter_boolean(query, field, selector):
+        if selector is None:
             return
         if selector in [True, 'true', 'True', '1']:
             selector = True
@@ -31,7 +31,7 @@ class FilterMixIN(object):
         query[field] = selector
 
     @staticmethod
-    def _filter_builder_list(query, field, selector):
+    def _filter_list(query, field, selector):
         if not selector:
             return
         if type(selector) is not list:
@@ -39,7 +39,7 @@ class FilterMixIN(object):
         query[field] = {'$in': selector}
 
     @staticmethod
-    def _filter_builder_re(query, field, selector):
+    def _filter_re(query, field, selector):
         if not selector:
             return
         query[field] = {'$regex': selector}

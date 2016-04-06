@@ -160,13 +160,15 @@ class ElasticSearchAAPAPI(object):
 
         permissions = Permissions(self._mongo_colls['permissions'])
         roles = Roles(self._mongo_colls['roles'])
-        session = Sessions(self._mongo_colls['sessions'])
+        sessions = Sessions(self._mongo_colls['sessions'])
         users = Users(self._mongo_colls['users'])
+        aa = AuthenticationAuthorization(users, sessions)
 
         app.install(MetaPlugin(permissions, 'm_permissions'))
         app.install(MetaPlugin(roles, 'm_roles'))
-        app.install(MetaPlugin(session, 'm_sessions'))
+        app.install(MetaPlugin(sessions, 'm_sessions'))
         app.install(MetaPlugin(users, 'm_users'))
+        app.install(MetaPlugin(aa, 'm_aa'))
         app.install(error_catcher)
 
         logapp = RequestID(WSGILogger(app, self._acc_logging(), ApacheFormatter()))
