@@ -1,7 +1,7 @@
 Introduction
 ------------
 This project implements an ElasticSearch Authentication and Authorization reverse proxy,
-that can be put in front of any ElasticSearch installation, without installing the need to install a
+that can be put in front of any ElasticSearch installation, without the need to install a
 plugin into ElasticSearch. Authentication is done vie HTTP Basic AUTH.
 
 IT consists of 5 main components:
@@ -132,11 +132,11 @@ The only things that needs to be adjusted are the IP and port configurations of 
 
 Pre Running
 ===========
-We assume that you already have a running Elasticsearch and MongoDB, setting up these is out of scope, and described well enough on other places.
+We assume that you already have a running Elasticsearch and MongoDB, setting up these is out of scope, and described well enough in other places.
 
 First Run
 =========
-Before the first run you have to create a default user, and all the required indexes this is done via:
+Before the first run, you have to create a default user and all the required indexes, this is done via:
 
     el_aap_api indicies
     el_aap_api create_admin
@@ -145,7 +145,7 @@ Before the first run you have to create a default user, and all the required ind
 
 Running
 =======
-Both executeables can be found in the contrib folder. The Proxy is called el_aap, and the api/configuration interface is called el_aap_api.
+Both executables can be found in the contrib folder. The Proxy is called el_aap, and the api/configuration interface is called el_aap_api.
 
 Help can be discovered thru calling contrib/el_aap(_api) --help
 
