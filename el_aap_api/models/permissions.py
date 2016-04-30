@@ -34,7 +34,7 @@ class Permissions(FilterMixIn, ProjectionMixIn):
             return_document=pymongo.ReturnDocument.AFTER
         )
         if result is None:
-            self.log.warn('{0} permission resource {1} not found'.format(request_id, _id))
+            self.log.warning('{0} permission resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         self.log.info('{0} success updating permission resource {1}'.format(request_id, _id))
         return result
@@ -51,7 +51,7 @@ class Permissions(FilterMixIn, ProjectionMixIn):
             return_document=pymongo.ReturnDocument.AFTER
         )
         if result is None:
-            self.log.warn('{0} permission resource {1} not found'.format(request_id, _id))
+            self.log.warning('{0} permission resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         self.log.info('{0} success updating permission resource {1}'.format(request_id, _id))
         return result
@@ -63,7 +63,7 @@ class Permissions(FilterMixIn, ProjectionMixIn):
         try:
             self._coll.insert_one(permission)
         except pymongo.errors.DuplicateKeyError:
-            self.log.warn('{0} permission resource {1} already exists'.format(request_id, permission['_id']))
+            self.log.warning('{0} permission resource {1} already exists'.format(request_id, permission['_id']))
             raise DuplicateResource(permission['_id'])
         self.log.info('{0} success creating permission resource {1}'.format(request_id, permission['_id']))
         return self.get(permission['_id'])
@@ -74,7 +74,7 @@ class Permissions(FilterMixIn, ProjectionMixIn):
         self.log.info('{0} deleting permission resource {1}'.format(request_id, _id))
         result = self._coll.delete_one(filter={'_id': _id})
         if result.deleted_count is 0:
-            self.log.warn('{0} permission resource {1} not found'.format(request_id, _id))
+            self.log.warning('{0} permission resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         self.log.info('{0} success deleting permission resource {1}'.format(request_id, _id))
         return
@@ -88,7 +88,7 @@ class Permissions(FilterMixIn, ProjectionMixIn):
             projection=self._projection(fields)
         )
         if result is None:
-            self.log.warn('{0} permission resource {1} not found'.format(request_id, _id))
+            self.log.warning('{0} permission resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         result['_id'] = _id
         self.log.info('{0} success fetching permission resource {1}'.format(request_id, _id))
@@ -106,7 +106,7 @@ class Permissions(FilterMixIn, ProjectionMixIn):
             return_document=pymongo.ReturnDocument.AFTER
         )
         if result is None:
-            self.log.warn('{0} permission resource {1} not found'.format(request_id, _id))
+            self.log.warning('{0} permission resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         self.log.info('{0} success updating permission resource {1}'.format(request_id, _id))
         return result
@@ -123,7 +123,7 @@ class Permissions(FilterMixIn, ProjectionMixIn):
             return_document=pymongo.ReturnDocument.AFTER
         )
         if result is None:
-            self.log.warn('{0} permission resource {1} not found'.format(request_id, _id))
+            self.log.warning('{0} permission resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         self.log.info('{0} success updating permission resource {1}'.format(request_id, _id))
         return result
@@ -167,7 +167,7 @@ class Permissions(FilterMixIn, ProjectionMixIn):
             return_document=pymongo.ReturnDocument.AFTER
         )
         if result is None:
-            self.log.warn('{0} permission resource {1} not found'.format(request_id, _id))
+            self.log.warning('{0} permission resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         result['_id'] = _id
         self.log.info('{0} success updating permission resource {1}'.format(request_id, _id))

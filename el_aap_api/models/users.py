@@ -38,11 +38,11 @@ class Users(FilterMixIn, ProjectionMixIn):
                 projection={'_id': 0, 'password': 1}
         )
         if not password:
-            self.log.warn('{0} failed validating credentials, user {1} not found'.format(
+            self.log.warning('{0} failed validating credentials, user {1} not found'.format(
                 request_id, credentials['user']))
             raise AuthenticationError
         if not pbkdf2_sha512.verify(credentials['password'], password['password']):
-            self.log.warn('{0} failed validating credentials, password wrong for user {}'.format(
+            self.log.warning('{0} failed validating credentials, password wrong for user {1}'.format(
                 request_id, credentials['user']))
             raise AuthenticationError
 
@@ -67,7 +67,7 @@ class Users(FilterMixIn, ProjectionMixIn):
         try:
             self._coll.insert_one(user)
         except pymongo.errors.DuplicateKeyError:
-            self.log.warn('{0} user resource {1} already exists'.format(request_id, user['_id']))
+            self.log.warning('{0} user resource {1} already exists'.format(request_id, user['_id']))
             raise DuplicateResource(user['_id'])
         self.log.info('{0} success creating new user resource {1}'.format(request_id, user['_id']))
         return self.get(user['_id'])
@@ -78,7 +78,7 @@ class Users(FilterMixIn, ProjectionMixIn):
         self.log.info('{0} deleting user resource {1}'.format(request_id, _id))
         result = self._coll.delete_one(filter={'_id': _id})
         if result.deleted_count is 0:
-            self.log.warn('{0} user resource {1} not found'.format(request_id, _id))
+            self.log.warning('{0} user resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         self.log.info('{0} success deleting user resource {1}'.format(request_id, _id))
         return
@@ -92,10 +92,24 @@ class Users(FilterMixIn, ProjectionMixIn):
             projection=self._projection(fields)
         )
         if result is None:
-            self.log.warn('{0} user resource {1} not found'.format(request_id, _id))
+            self.log.warning('{0} user resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         self.log.info('{0} success fetching user resource {1}'.format(request_id, _id))
         return result
+
+    @method_wrapper
+    def get_user_by_email(self, email):
+        request_id = request.environ.get('REQUEST_ID', None)
+        self.log.info('{0} getting user by email {1}'.format(request_id, email))
+        result = self._coll.find_one(
+            filter={'email': email},
+            projection=self._projection('_id')
+        )
+        if result is None:
+            self.log.warning('{0} email not assigned to any user'.format(request_id, email))
+            return
+        self.log.info('{0} success getting user by email {1}'.format(request_id, email))
+        return result['_id']
 
     @method_wrapper
     def is_admin(self, user):
@@ -151,7 +165,7 @@ class Users(FilterMixIn, ProjectionMixIn):
             return_document=pymongo.ReturnDocument.AFTER
         )
         if result is None:
-            self.log.warn('{0} user resource {1} not found'.format(request_id, _id))
+            self.log.warning('{0} user resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         self.log.info('{0} success user resource {1}'.format(request_id, _id))
         return result

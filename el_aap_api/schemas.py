@@ -261,3 +261,151 @@ USERS_UPDATE = {
         }
     }
 }
+
+LOSTPW_REQUEST = {
+    "type": "object",
+    "additionalProperties": False,
+    "required":  [
+        "email",
+    ],
+    "properties": {
+        "email": {
+            "type": "string",
+            "format": "email"
+        }
+    }
+}
+
+LOSTPW_RESET = {
+    "type": "object",
+    "additionalProperties": False,
+    "required":  [
+        "token",
+        "password"
+    ],
+    "properties": {
+        "token": {
+            "type": "string",
+        },
+        "password": {
+            "type": "string",
+        }
+    }
+}
+
+CHECK_CONFIG_MAIN = {
+    "type": "object",
+    "additionalProperties": False,
+    "required":  [
+        "dlog",
+        "port",
+        "pw_recovery",
+        "static_path"
+    ],
+    "properties": {
+        "dlog": {
+            "type": "string",
+        },
+        "port": {
+            "type": "integer",
+            "maximum": 65535,
+            "minimum": 1
+        },
+        "pw_recovery": {
+            "type": "boolean"
+        },
+        "static_path": {
+            "type": "string",
+        },
+    }
+}
+
+CHECK_CONFIG_MONGOPOOL = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": [
+        "hosts",
+        "db"
+    ],
+    "optional": [
+        "pass",
+        "user"
+    ],
+    "properties": {
+        "hosts": {
+            "type": "string",
+        },
+        "db": {
+            "type": "string",
+        },
+        "pass": {
+            "type": "string",
+        },
+        "user": {
+            "type": "string",
+        },
+    }
+}
+
+CHECK_CONFIG_MONGOCOLL = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": [
+        "coll",
+        "pool"
+    ],
+    "properties": {
+        "coll": {
+            "type": "string",
+        },
+        "pool": {
+            "type": "string",
+        }
+    }
+}
+
+CHECK_CONFIG_PW_RECOVERY = {
+    "type": "object",
+    "additionalProperties": False,
+    "required":  [
+        "api_url",
+        "www_url",
+        "from",
+        "subject",
+        "text_tmpl",
+        "html_tmpl",
+        "smtp_host",
+        "smtp_port"
+    ],
+    "properties": {
+        "api_url": {
+            "type": "string",
+            "format": "uri"
+        },
+        "www_url": {
+            "type": "string",
+            "format": "uri"
+        },
+        "from": {
+            "type": "string",
+            "format": "email"
+        },
+        "subject": {
+            "type": "string",
+        },
+        "text_tmpl": {
+            "type": "string",
+        },
+        "html_tmpl": {
+            "type": "string",
+        },
+        "smtp_host": {
+            "type": "string"
+        },
+        "smtp_port": {
+            "type": "integer",
+            "maximum": 65535,
+            "minimum": 1
+        },
+    }
+}

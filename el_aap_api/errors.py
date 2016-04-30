@@ -16,11 +16,14 @@ __all__ = [
     'InvalidBody',
     'InvalidFields',
     'InvalidSelectors',
+    'LostPWErrorInProgress',
+    'LostPWRecoveryDisabledError',
     'ModelError',
     'MongoConnError',
     'PermError',
     'ResourceNotFound',
     'SessionError',
+    'MailServerConnError',
     'ValidationError'
 ]
 
@@ -70,7 +73,7 @@ def method_wrapper(func):
 
 
 class BaseError(Exception):
-    def __init__(self, status, code, msg):
+    def __init__(self, status=None, code=None, msg=None):
         self.status = status
         self.msg = msg
         self.code = code
@@ -80,33 +83,32 @@ class BaseError(Exception):
         }
 
 
-class MongoConnError(BaseError):
-    def __init__(self, err):
-        super().__init__(
-            status=500,
-            code=1001,
-            msg="MongoDB connection error: {0}".format(err)
-        )
-
-
-class ElasticSearchConnError(BaseError):
-    def __init__(self, err):
-        super().__init__(
-            status=500,
-            code=1002,
-            msg="ElasticSearch connection error: {0}".format(err)
-        )
+class AAError(BaseError):
+    def __init__(self, status=1000, code=None, msg=None):
+        super().__init__(status, code, msg)
 
 
 class ModelError(BaseError):
-    pass
+    def __init__(self, status=2000, code=None, msg=None):
+        super().__init__(status, code, msg)
 
 
 class ValidationError(BaseError):
-    pass
+    def __init__(self, status=3000, code=None, msg=None):
+        super().__init__(status, code, msg)
 
 
-class AuthenticationError(ModelError):
+class FeatureError(BaseError):
+    def __init__(self, status=4000, code=None, msg=None):
+        super().__init__(status, code, msg)
+
+
+class BackEndError(BaseError):
+    def __init__(self, status=5000, code=None, msg=None):
+        super().__init__(status, code, msg)
+
+
+class AuthenticationError(AAError):
     def __init__(self):
         super().__init__(
                 status=403,
@@ -115,7 +117,7 @@ class AuthenticationError(ModelError):
         )
 
 
-class BasicAuthenticationError(ModelError):
+class BasicAuthenticationError(AAError):
     def __init__(self):
         super().__init__(
             status=401,
@@ -124,7 +126,7 @@ class BasicAuthenticationError(ModelError):
         )
 
 
-class AlreadyAuthenticatedError(ModelError):
+class AlreadyAuthenticatedError(AAError):
     def __init__(self):
         super().__init__(
                 status=403,
@@ -133,7 +135,7 @@ class AlreadyAuthenticatedError(ModelError):
         )
 
 
-class SessionError(ModelError):
+class SessionError(AAError):
     def __init__(self):
         super().__init__(
             status=403,
@@ -142,12 +144,21 @@ class SessionError(ModelError):
         )
 
 
-class PermError(ModelError):
+class PermError(AAError):
     def __init__(self):
         super().__init__(
             status=403,
             code=1005,
             msg="Required permission missing"
+        )
+
+
+class LostPWErrorInProgress(AAError):
+    def __init__(self):
+        super().__init__(
+            status=403,
+            code=1006,
+            msg="A recent password recovery request is still in progress"
         )
 
 
@@ -190,7 +201,43 @@ class InvalidFields(ValidationError):
 class InvalidSelectors(ValidationError):
     def __init__(self, err):
         super().__init__(
+            status=400,
+            code=3004,
+            msg="Invalid selection: {0}".format(err)
+        )
+
+
+class LostPWRecoveryDisabledError(FeatureError):
+    def __init__(self):
+        super().__init__(
                 status=400,
-                code=3004,
-                msg="Invalid selection: {0}".format(err)
+                code=4001,
+                msg="Password recovery feature is disabled"
+        )
+
+
+class MongoConnError(BackEndError):
+    def __init__(self, err):
+        super().__init__(
+            status=500,
+            code=5001,
+            msg="MongoDB connection error: {0}".format(err)
+        )
+
+
+class ElasticSearchConnError(BackEndError):
+    def __init__(self, err):
+        super().__init__(
+            status=500,
+            code=5002,
+            msg="ElasticSearch connection error: {0}".format(err)
+        )
+
+
+class MailServerConnError(BackEndError):
+    def __init__(self, err):
+        super().__init__(
+            status=500,
+            code=5003,
+            msg="SMTP Server connection error: {0}".format(err)
         )

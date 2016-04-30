@@ -1,9 +1,16 @@
 __author__ = 'schlitzer'
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 from bottle import request, response
+from jinja2 import Template
 import jsonschema
 import jsonschema.exceptions
 
+
 from el_aap_api.app import app
+from el_aap_api.errors import *
 from el_aap_api.schemas import *
 
 
@@ -15,6 +22,57 @@ def search(m_aa, m_users):
             admin=request.query.get('admin', None),
             fields=request.query.get('f', None)
     )
+
+
+@app.post('/elaap/api/v1/users/_lostpw')
+def lostpw(m_config, m_lostpw, m_users):
+    if not m_config['main']['pw_recovery']:
+        raise LostPWRecoveryDisabledError
+    jsonschema.validate(request.json, LOSTPW_REQUEST, format_checker=jsonschema.draft4_format_checker)
+    email = request.json['email']
+    user = m_users.get_user_by_email(email)
+    username = m_users.get(user, fields='name')['name']
+    token = m_lostpw.create(user)
+
+    text_tmpl = Template(m_config['pw_recovery']['text_tmpl'])
+    html_tmpl = Template(m_config['pw_recovery']['html_tmpl'])
+    text_mail = text_tmpl.render(
+        api_url=m_config['pw_recovery']['api_url'],
+        www_url=m_config['pw_recovery']['www_url'],
+        user_id=user, username=username, token=token
+    )
+    html_mail = html_tmpl.render(
+        api_url=m_config['pw_recovery']['api_url'],
+        www_url=m_config['pw_recovery']['www_url'],
+        user_id=user, username=username, token=token
+    )
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = m_config['pw_recovery']['subject']
+    msg['From'] = m_config['pw_recovery']['from']
+    msg['To'] = email
+    msg.attach(MIMEText(text_mail, 'plain'))
+    msg.attach(MIMEText(html_mail, 'html'))
+    try:
+        s = smtplib.SMTP(m_config['pw_recovery']['smtp_host'], m_config['pw_recovery']['smtp_port'])
+        s.sendmail(m_config['pw_recovery']['from'], email, msg.as_string())
+        s.quit()
+    except ConnectionRefusedError as err:
+        raise MailServerConnError(err)
+
+
+@app.put('/elaap/api/v1/users/_lostpw')
+def lostpw(m_config, m_lostpw, m_users):
+    if not m_config['main']['pw_recovery']:
+        raise LostPWRecoveryDisabledError
+    password = request.json['password']
+    token = request.json['token']
+    user = m_lostpw.get(token)
+    try:
+        m_users.update(user, {'password': password})
+    except ResourceNotFound:
+        raise
+    finally:
+        m_lostpw.delete(token)
 
 
 @app.get('/elaap/api/v1/users/<user>')

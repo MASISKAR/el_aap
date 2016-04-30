@@ -32,7 +32,7 @@ class Roles(FilterMixIn, ProjectionMixIn):
             return_document=pymongo.ReturnDocument.AFTER
         )
         if result is None:
-            self.log.warn('{0} role resource {1} not found'.format(request_id, _id))
+            self.log.warning('{0} role resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         self.log.info('{0} success updating role resource {1}'.format(request_id, _id))
         return result
@@ -53,7 +53,7 @@ class Roles(FilterMixIn, ProjectionMixIn):
         try:
             self._coll.insert_one(role)
         except pymongo.errors.DuplicateKeyError:
-            self.log.warn('{0} role resource {1} already exists'.format(request_id, role['_id']))
+            self.log.warning('{0} role resource {1} already exists'.format(request_id, role['_id']))
             raise DuplicateResource(role['_id'])
         self.log.info('{0} success creating new role resource {1}'.format(request_id, role['_id']))
         return self.get(role['_id'])
@@ -64,7 +64,7 @@ class Roles(FilterMixIn, ProjectionMixIn):
         self.log.info('{0} deleting role resource {1}'.format(request_id, _id))
         result = self._coll.delete_one(filter={'_id': _id})
         if result.deleted_count is 0:
-            self.log.warn('{0} role resource {1} not found'.format(request_id, _id))
+            self.log.warning('{0} role resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         self.log.info('{0} success deleting role resource {1}'.format(request_id, _id))
         return
@@ -78,7 +78,7 @@ class Roles(FilterMixIn, ProjectionMixIn):
                 projection=self._projection(fields)
         )
         if result is None:
-            self.log.warn('{0} role resource {1} not found'.format(request_id, _id))
+            self.log.warning('{0} role resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         self.log.info('{0} success fetching role resource {1}'.format(request_id, _id))
         return result
@@ -95,7 +95,7 @@ class Roles(FilterMixIn, ProjectionMixIn):
             return_document=pymongo.ReturnDocument.AFTER
         )
         if result is None:
-            self.log.warn('{0} role resource {1} not found'.format(request_id, _id))
+            self.log.warning('{0} role resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         self.log.info('{0} success updating role resource {1}'.format(request_id, _id))
         return result
@@ -140,7 +140,7 @@ class Roles(FilterMixIn, ProjectionMixIn):
             return_document=pymongo.ReturnDocument.AFTER
             )
         if result is None:
-            self.log.warn('{0} role resource {1} not found'.format(request_id, _id))
+            self.log.warning('{0} role resource {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         self.log.info('{0} success updating role resource {1}'.format(request_id, _id))
         return result

@@ -6,6 +6,7 @@ from bottle import PluginError
 
 from el_aap_api.errors import ValidationError
 from el_aap_api.models.aa import AuthenticationAuthorization
+from el_aap_api.models.lostpw import LostPW
 from el_aap_api.models.permissions import Permissions
 from el_aap_api.models.roles import Roles
 from el_aap_api.models.session import Sessions
@@ -16,6 +17,7 @@ __all__ = [
     'ValidationError',
     'MetaPlugin',
     'AuthenticationAuthorization',
+    'LostPW',
     'Permissions',
     'Roles',
     'Sessions',

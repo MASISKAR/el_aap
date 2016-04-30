@@ -54,7 +54,7 @@ class TestUnitControllerAuthenticate(TestCase):
             call('_id'),
             call('token')
         ])
-        m_sessions.delete.assert_has_call('session_id')
+        m_sessions.delete.assert_called_with('session_id')
 
     def test_delete_invalid_session(self):
         m_sessions = Mock()

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='el-aap',
-    version='0.0.8',
+    version='0.0.9',
     description='Elasticsearch Authentication and Authorization Proxy',
     long_description="""
 Elasticsearch Authentication and Authorization reverse proxy
@@ -31,6 +31,7 @@ License: MIT (see LICENSE for details)
     install_requires=[
         'bottle',
         'cachetools',
+        'jinja2',
         'jsonschema',
         'passlib',
         'pep3143daemon',

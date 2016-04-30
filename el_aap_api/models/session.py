@@ -2,6 +2,8 @@ __author__ = 'schlitzer'
 
 import datetime
 import logging
+import random
+import string
 import uuid
 
 
@@ -23,6 +25,10 @@ class Sessions(FilterMixIn, ProjectionMixIn):
         self.log = logging.getLogger('el_aap')
 
     @method_wrapper
+    def _create_token(self):
+        return ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits + '_-.') for _ in range(128))
+
+    @method_wrapper
     def check_session(self, token):
         request_id = request.environ.get('REQUEST_ID', None)
         self.log.debug('{0} checking token {1}'.format(request_id, token['_id']))
@@ -31,10 +37,10 @@ class Sessions(FilterMixIn, ProjectionMixIn):
             projection={'_id': 0, 'token': 1, 'user': 1}
         )
         if not result:
-            self.log.warm('{0} failed checking token {1}, not found in db'.format(request_id, token['_id']))
+            self.log.warning('{0} failed checking token {1}, not found in db'.format(request_id, token['_id']))
             raise SessionError
         if not pbkdf2_sha512.verify(token['token'], result['token']):
-            self.log.warm('{0} failed checking token {1}, token not matching'.format(request_id, token['_id']))
+            self.log.warning('{0} failed checking token {1}, token not matching'.format(request_id, token['_id']))
             raise SessionError
         self._coll.update_one(
             filter={'_id': Binary(uuid.UUID(token['_id']).bytes, STANDARD)},
@@ -49,7 +55,7 @@ class Sessions(FilterMixIn, ProjectionMixIn):
         self.log.info('{0} creating new session for user {1}'.format(request_id, user))
         session = {}
         _id = uuid.uuid4()
-        token = uuid.uuid4()
+        token = self._create_token()
         session['_id'] = Binary(_id.bytes, STANDARD)
         session['token'] = pbkdf2_sha512.encrypt(str(token), rounds=1000, salt_size=32)
         session['lastused'] = datetime.datetime.utcnow()
@@ -68,7 +74,7 @@ class Sessions(FilterMixIn, ProjectionMixIn):
         self.log.info('{0} deleting session {1}'.format(request_id, _id))
         result = self._coll.delete_one(filter={'_id': Binary(uuid.UUID(_id).bytes, STANDARD)})
         if result.deleted_count is 0:
-            self.log.warn('{0} session {1} not found'.format(request_id, _id))
+            self.log.warning('{0} session {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         self.log.info('{0} success deleting session {1}'.format(request_id, _id))
         return
@@ -84,7 +90,7 @@ class Sessions(FilterMixIn, ProjectionMixIn):
             self._projection(fields)
         )
         if result is None:
-            self.log.warn('{0} session {1} not found'.format(request_id, _id))
+            self.log.warning('{0} session {1} not found'.format(request_id, _id))
             raise ResourceNotFound(_id)
         result['_id'] = _id
         if 'lastused' in result:

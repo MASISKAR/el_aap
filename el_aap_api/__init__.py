@@ -11,6 +11,8 @@ from logging.handlers import TimedRotatingFileHandler
 
 # 3rd party
 from bottle import run
+import jsonschema
+import jsonschema.exceptions
 from pep3143daemon import DaemonContext, PidFile
 import pymongo
 from requestlogger import WSGILogger, ApacheFormatter
@@ -21,6 +23,7 @@ from el_aap_api.app import app, app_logger
 from el_aap_api.controllers import *
 from el_aap_api.models import *
 from el_aap_api.errors import error_catcher
+from el_aap_api.schemas import *
 
 
 def main():
@@ -102,6 +105,7 @@ class ElasticSearchAAPAPI(object):
     def __init__(self, cfg, pid, nodaemon):
         self._config_file = cfg
         self._config = configparser.ConfigParser()
+        self._config_dict = None
         self._mongo_pools = dict()
         self._mongo_colls = dict()
         self._pid = pid
@@ -110,40 +114,18 @@ class ElasticSearchAAPAPI(object):
 
     def _acc_logging(self):
         acc_handlers = []
-
-        try:
-            access_log = self.config.get('file:logging', 'acc_log')
-        except (configparser.NoOptionError, configparser.NoSectionError):
-            print('please configure the acc_log in the file:logging section')
-            sys.exit(1)
-        try:
-            access_retention = self.config.getint('file:logging', 'acc_retention')
-        except (configparser.NoOptionError, configparser.NoSectionError):
-            print('please configure the acc_retention in the file:logging section')
-            sys.exit(1)
+        access_log = self.config.get('file:logging', 'acc_log')
+        access_retention = self.config.getint('file:logging', 'acc_retention')
         acc_handlers.append(TimedRotatingFileHandler(access_log, 'd', access_retention))
         return acc_handlers
 
     def _app_logging(self):
         logfmt = logging.Formatter('%(asctime)sUTC - %(levelname)s - %(message)s')
         logfmt.converter = time.gmtime
-
         app_handlers = []
-        try:
-            aap_level = self.config.get('file:logging', 'app_loglevel')
-        except (configparser.NoOptionError, configparser.NoSectionError):
-            print('please configure app_loglevel in the file:logging section')
-            sys.exit(1)
-        try:
-            app_log = self.config.get('file:logging', 'app_log')
-        except (configparser.NoOptionError, configparser.NoSectionError):
-            print('please configure app_log in the file:logging section')
-            sys.exit(1)
-        try:
-            app_retention = self.config.getint('file:logging', 'app_retention')
-        except (configparser.NoOptionError, configparser.NoSectionError):
-            print('please configure app_retention in the file:logging section')
-            sys.exit(1)
+        aap_level = self.config.get('file:logging', 'app_loglevel')
+        app_log = self.config.get('file:logging', 'app_log')
+        app_retention = self.config.getint('file:logging', 'app_retention')
         app_handlers.append(TimedRotatingFileHandler(app_log, 'd', app_retention))
 
         for handler in app_handlers:
@@ -152,23 +134,49 @@ class ElasticSearchAAPAPI(object):
         self.log.setLevel(aap_level)
         self.log.debug("application logger is up")
 
+    def _pw_recovery(self):
+        try:
+            if self.config.getboolean('main', 'pw_recovery'):
+                jsonschema.validate(self.config_dict['pw_recovery'], CHECK_CONFIG_PW_RECOVERY)
+        except jsonschema.exceptions.ValidationError as err:
+            print("pw_recovery section: {0}".format(err))
+            sys.exit(1)
+        try:
+            tmpl = self.config.get('pw_recovery', 'text_tmpl')
+            with open(tmpl) as f:
+                self.config_dict['pw_recovery']['text_tmpl'] = f.read()
+        except FileNotFoundError:
+            print("could not read text_tmpl: {0}".format(tmpl))
+            sys.exit(1)
+        try:
+            tmpl = self.config.get('pw_recovery', 'html_tmpl')
+            with open(tmpl) as f:
+                self.config_dict['pw_recovery']['html_tmpl'] = f.read()
+        except FileNotFoundError:
+            print("could not read html_tmpl: {0}".format(tmpl))
+            sys.exit(1)
+
     def _app(self, devel=False):
         self._app_logging()
         self.log.info("starting up")
+        self._pw_recovery()
         self._setup_pools()
         self._setup_colls()
 
-        permissions = Permissions(self._mongo_colls['permissions'])
-        roles = Roles(self._mongo_colls['roles'])
-        sessions = Sessions(self._mongo_colls['sessions'])
-        users = Users(self._mongo_colls['users'])
-        aa = AuthenticationAuthorization(users, sessions)
+        m_lostpw = LostPW(self._mongo_colls['lostpw'])
+        m_permissions = Permissions(self._mongo_colls['permissions'])
+        m_roles = Roles(self._mongo_colls['roles'])
+        m_sessions = Sessions(self._mongo_colls['sessions'])
+        m_users = Users(self._mongo_colls['users'])
+        m_aa = AuthenticationAuthorization(m_users, m_sessions)
 
-        app.install(MetaPlugin(permissions, 'm_permissions'))
-        app.install(MetaPlugin(roles, 'm_roles'))
-        app.install(MetaPlugin(sessions, 'm_sessions'))
-        app.install(MetaPlugin(users, 'm_users'))
-        app.install(MetaPlugin(aa, 'm_aa'))
+        app.install(MetaPlugin(m_lostpw, 'm_lostpw'))
+        app.install(MetaPlugin(m_permissions, 'm_permissions'))
+        app.install(MetaPlugin(m_roles, 'm_roles'))
+        app.install(MetaPlugin(m_sessions, 'm_sessions'))
+        app.install(MetaPlugin(m_users, 'm_users'))
+        app.install(MetaPlugin(m_aa, 'm_aa'))
+        app.install(MetaPlugin(self.config_dict, 'm_config'))
         app.install(error_catcher)
 
         logapp = RequestID(WSGILogger(app, self._acc_logging(), ApacheFormatter()))
@@ -176,10 +184,43 @@ class ElasticSearchAAPAPI(object):
         self.log.info("startup done, now serving")
         run(app=logapp, host='0.0.0.0', port=self.config.getint('main', 'port'), debug=devel, reloader=devel, server='waitress')
 
+    @staticmethod
+    def _cfg_to_dict(config):
+        result = {}
+        for section in config.sections():
+            result[section] = {}
+            for option in config.options(section):
+                try:
+                    result[section][option] = config.getint(section, option)
+                    continue
+                except ValueError:
+                    pass
+                try:
+                    result[section][option] = config.getfloat(section, option)
+                    continue
+                except ValueError:
+                    pass
+                try:
+                    result[section][option] = config.getboolean(section, option)
+                    continue
+                except ValueError:
+                    pass
+                try:
+                    result[section][option] = config.get(section, option)
+                    continue
+                except ValueError:
+                    pass
+        return result
+
     def _setup_pools(self):
         self.log.info("setting up mongodb connection pools")
         for section in self.config.sections():
             if section.endswith(':mongopool'):
+                try:
+                    jsonschema.validate(self.config_dict[section], CHECK_CONFIG_MONGOPOOL)
+                except jsonschema.exceptions.ValidationError as err:
+                    print("{0} section: {1}".format(section, err))
+                    sys.exit(1)
                 sectionname = section.rsplit(':', 1)[0]
                 self.log.debug("setting up mongodb connection pool {0}".format(sectionname))
                 pool = pymongo.MongoClient(
@@ -202,6 +243,11 @@ class ElasticSearchAAPAPI(object):
         self.log.info("setting up mongodb collections")
         for section in self.config.sections():
             if section.endswith(':mongocoll'):
+                try:
+                    jsonschema.validate(self.config_dict[section], CHECK_CONFIG_MONGOCOLL)
+                except jsonschema.exceptions.ValidationError as err:
+                    print("{0} section: {1}".format(section, err))
+                    sys.exit(1)
                 sectionname = section.rsplit(':', 1)[0]
                 self.log.debug("setting up mongodb collection {0}".format(sectionname))
                 pool_name = self.config.get(section, 'pool')
@@ -214,10 +260,13 @@ class ElasticSearchAAPAPI(object):
                 self.log.debug("setting up mongodb collection {0} done".format(sectionname))
         self.log.info("setting up mongodb collections done")
 
-
     @property
     def config(self):
         return self._config
+
+    @property
+    def config_dict(self):
+        return self._config_dict
 
     @property
     def pid(self):
@@ -229,6 +278,7 @@ class ElasticSearchAAPAPI(object):
 
     def create_admin(self):
         self.config.read_file(open(self._config_file))
+        self._config_dict = self._cfg_to_dict(self.config)
         self._setup_pools()
         self._setup_colls()
 
@@ -240,16 +290,19 @@ class ElasticSearchAAPAPI(object):
             "password": "password"
         }
 
-        users = Users(self._mongo_colls['users'])
-        users.create(admin)
+        m_users = Users(self._mongo_colls['users'])
+        m_users.create(admin)
 
     def manage_indices(self):
         self.config.read_file(open(self._config_file))
+        self._config_dict = self._cfg_to_dict(self.config)
         self._setup_pools()
         self._setup_colls()
 
         sessions = self._mongo_colls['sessions']
         sessions.create_index([('lastused', pymongo.ASCENDING)], expireAfterSeconds=3600)
+        lostpw = self._mongo_colls['lostpw']
+        lostpw.create_index([('created', pymongo.ASCENDING)], expireAfterSeconds=3600)
 
     def quit(self):
         try:
@@ -268,6 +321,12 @@ class ElasticSearchAAPAPI(object):
 
     def start(self, devel=False):
         self.config.read_file(open(self._config_file))
+        self._config_dict = self._cfg_to_dict(self.config)
+        try:
+            jsonschema.validate(self.config_dict['main'], CHECK_CONFIG_MAIN)
+        except jsonschema.exceptions.ValidationError as err:
+            print("main section: {0}".format(err))
+            sys.exit(1)
         if devel:
             self._app(devel=True)
             return
@@ -279,4 +338,3 @@ class ElasticSearchAAPAPI(object):
         daemon.stdout = dlog
         daemon.open()
         self._app()
-
