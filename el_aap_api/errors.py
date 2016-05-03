@@ -23,6 +23,7 @@ __all__ = [
     'PermError',
     'ResourceNotFound',
     'SessionError',
+    'StaticPathDisabledError',
     'MailServerConnError',
     'ValidationError'
 ]
@@ -210,9 +211,18 @@ class InvalidSelectors(ValidationError):
 class LostPWRecoveryDisabledError(FeatureError):
     def __init__(self):
         super().__init__(
+            status=400,
+            code=4001,
+            msg="Password recovery feature is disabled"
+        )
+
+
+class StaticPathDisabledError(FeatureError):
+    def __init__(self):
+        super().__init__(
                 status=400,
-                code=4001,
-                msg="Password recovery feature is disabled"
+                code=4002,
+                msg="Static path feature is disabled"
         )
 
 

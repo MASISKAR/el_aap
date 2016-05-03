@@ -91,7 +91,20 @@ Example configuration for /etc/el_aap/el_aap_api.ini
 ```
 [main]
 dlog = el_aap_api_.dlog
+# if not set, static file delivery is disabled
+static_path = /path/to/static
 port = 9000
+
+# if this section is configured, password recovery feature via email is enabled
+# [pw_recovery]
+# api_url = http://el_aap_api.example.com
+# www_url = http://el_aap_www.example.com/reset_password/
+# from = elaap-pwrecovery@example.com
+# subject = pw_recovery@example.com
+# text_tmpl = /path/to/email/template/text_templ.jinja2
+# html_tmpl = /path/to/email/template/html_templ.jinja2
+# smtp_host = 127.0.0.1
+# smtp_port = 10025
 
 [file:logging]
 acc_log = el_aap_api_access.log

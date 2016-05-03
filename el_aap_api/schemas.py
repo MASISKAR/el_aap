@@ -299,7 +299,6 @@ CHECK_CONFIG_MAIN = {
     "required":  [
         "dlog",
         "port",
-        "pw_recovery",
         "static_path"
     ],
     "properties": {
@@ -310,9 +309,6 @@ CHECK_CONFIG_MAIN = {
             "type": "integer",
             "maximum": 65535,
             "minimum": 1
-        },
-        "pw_recovery": {
-            "type": "boolean"
         },
         "static_path": {
             "type": "string",

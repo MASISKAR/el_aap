@@ -136,7 +136,7 @@ class ElasticSearchAAPAPI(object):
 
     def _pw_recovery(self):
         try:
-            if self.config.getboolean('main', 'pw_recovery'):
+            if 'pw_recovery' in self._config_dict:
                 jsonschema.validate(self.config_dict['pw_recovery'], CHECK_CONFIG_PW_RECOVERY)
         except jsonschema.exceptions.ValidationError as err:
             print("pw_recovery section: {0}".format(err))
