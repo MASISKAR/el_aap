@@ -138,6 +138,8 @@ class ElasticSearchAAPAPI(object):
         try:
             if 'pw_recovery' in self._config_dict:
                 jsonschema.validate(self.config_dict['pw_recovery'], CHECK_CONFIG_PW_RECOVERY)
+            else:
+                return
         except jsonschema.exceptions.ValidationError as err:
             print("pw_recovery section: {0}".format(err))
             sys.exit(1)
