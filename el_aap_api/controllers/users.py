@@ -26,11 +26,13 @@ def search(m_aa, m_users):
 
 @app.post('/elaap/api/v1/users/_lostpw')
 def lostpw(m_config, m_lostpw, m_users):
-    if 'pw_recovery' in m_config:
+    if 'pw_recovery' not in m_config:
         raise LostPWRecoveryDisabledError
     jsonschema.validate(request.json, LOSTPW_REQUEST, format_checker=jsonschema.draft4_format_checker)
     email = request.json['email']
     user = m_users.get_user_by_email(email)
+    if not user:
+        return
     username = m_users.get(user, fields='name')['name']
     token = m_lostpw.create(user)
 
@@ -62,7 +64,7 @@ def lostpw(m_config, m_lostpw, m_users):
 
 @app.put('/elaap/api/v1/users/_lostpw')
 def lostpw(m_config, m_lostpw, m_users):
-    if 'pw_recovery' in m_config:
+    if 'pw_recovery' not in m_config:
         raise LostPWRecoveryDisabledError
     password = request.json['password']
     token = request.json['token']
