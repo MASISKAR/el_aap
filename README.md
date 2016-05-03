@@ -139,6 +139,11 @@ pool = main
 [sessions:mongocoll]
 coll = sessions
 pool = main
+
+# the lostpw collection should use the "main" MongoDB pool, and the collection name "lostpw"
+[lostpw:mongocoll]
+coll = lostpw
+pool = main
 ```
 
 The only things that needs to be adjusted are the IP and port configurations of MongoDB and Elasticsearch. Everything else should stay unchanged. The MongoDB sections in el_aap.ini have to match there counterparts in el_aap_api.ini and vise versa, except for the session section, that is only needed in el_aap_api.ini
