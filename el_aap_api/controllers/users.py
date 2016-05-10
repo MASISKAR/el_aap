@@ -29,12 +29,13 @@ def lostpw(m_config, m_lostpw, m_users):
     if 'pw_recovery' not in m_config:
         raise LostPWRecoveryDisabledError
     jsonschema.validate(request.json, LOSTPW_REQUEST, format_checker=jsonschema.draft4_format_checker)
-    email = request.json['email']
-    user = m_users.get_user_by_email(email)
-    if not user:
+    try:
+        user = m_users.get(request.json['_id'])
+        username = user['name']
+        email = user['email']
+    except ResourceNotFound:
         return
-    username = m_users.get(user, fields='name')['name']
-    token = m_lostpw.create(user)
+    token = m_lostpw.create(user['_id'])
 
     text_tmpl = Template(m_config['pw_recovery']['text_tmpl'])
     html_tmpl = Template(m_config['pw_recovery']['html_tmpl'])
@@ -46,7 +47,7 @@ def lostpw(m_config, m_lostpw, m_users):
     html_mail = html_tmpl.render(
         api_url=m_config['pw_recovery']['api_url'],
         www_url=m_config['pw_recovery']['www_url'],
-        user_id=user, username=username, token=token
+        user_id=user['_id'], username=username, token=token
     )
     msg = MIMEMultipart('alternative')
     msg['Subject'] = m_config['pw_recovery']['subject']

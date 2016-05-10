@@ -317,8 +317,8 @@ class ElasticSearchAAPCLI(object):
             print('invalid login credentials specified')
             sys.exit(1)
         session = {
-            'sid': request.json()['_id'],
-            'token': request.json()['token']
+            'X-SID': request.json()['_id'],
+            'X_TOKEN': request.json()['token']
         }
         with open(os.path.expanduser('~/.el_aap_cli.session'), 'w') as outfile:
             json.dump(session, outfile)
@@ -331,7 +331,7 @@ class ElasticSearchAAPCLI(object):
         except (ValueError, FileNotFoundError):
             return
 
-        request = requests.get(self.endpoint+'elaap/api/v1/authenticate', cookies=session)
+        request = requests.get(self.endpoint+'elaap/api/v1/users/_self', headers=session)
         if request.status_code == 200:
             return session
 
@@ -344,7 +344,7 @@ class ElasticSearchAAPCLI(object):
             'roles': roles.split(',')
         }
         url = self.endpoint+'elaap/api/v1/permissions'
-        request = requests.post(url, json=payload, cookies=self.session)
+        request = requests.post(url, json=payload, headers=self.session)
         if request.status_code == 201:
             print(request.json())
         else:
@@ -353,7 +353,7 @@ class ElasticSearchAAPCLI(object):
 
     def perm_del(self, _id):
         url = self.endpoint+'elaap/api/v1/permissions/'+_id
-        request = requests.delete(url, cookies=self.session)
+        request = requests.delete(url, headers=self.session)
         if request.status_code == 200:
             print('permission deleted')
         else:
@@ -362,7 +362,7 @@ class ElasticSearchAAPCLI(object):
 
     def perm_get(self, _id):
         url = self.endpoint+'elaap/api/v1/permissions/'+_id
-        request = requests.get(url, cookies=self.session)
+        request = requests.get(url, headers=self.session)
         if request.status_code == 202:
             print(request.json())
         else:
@@ -380,7 +380,7 @@ class ElasticSearchAAPCLI(object):
         if roles is not None:
             payload['roles'] = roles.split(',')
         url = self.endpoint+'elaap/api/v1/permissions/'+_id
-        request = requests.put(url, json=payload, cookies=self.session)
+        request = requests.put(url, json=payload, headers=self.session)
         if request.status_code == 200:
             print(request.json())
         else:
@@ -398,14 +398,14 @@ class ElasticSearchAAPCLI(object):
         if roles is not None:
             params['roles'] = roles
         url = self.endpoint+'elaap/api/v1/permissions/_search'
-        request = requests.get(url, params=params, cookies=self.session)
+        request = requests.get(url, params=params, headers=self.session)
         for result in request.json()['results']:
             print(result)
 
     def perm_add_perms(self, _id, permissions):
         payload = permissions.split(',')
         url = self.endpoint+'elaap/api/v1/permissions/'+_id+'/permissions'
-        request = requests.put(url, json=payload, cookies=self.session)
+        request = requests.put(url, json=payload, headers=self.session)
         if request.status_code == 200:
             print(request.json())
         else:
@@ -415,7 +415,7 @@ class ElasticSearchAAPCLI(object):
     def perm_del_perms(self, _id, permissions):
         payload = permissions.split(',')
         url = self.endpoint+'elaap/api/v1/permissions/'+_id+'/permissions'
-        request = requests.delete(url, json=payload, cookies=self.session)
+        request = requests.delete(url, json=payload, headers=self.session)
         if request.status_code == 200:
             print(request.json())
         else:
@@ -425,7 +425,7 @@ class ElasticSearchAAPCLI(object):
     def perm_add_roles(self, _id, roles):
         payload = roles.split(',')
         url = self.endpoint+'elaap/api/v1/permissions/'+_id+'/roles'
-        request = requests.put(url, json=payload, cookies=self.session)
+        request = requests.put(url, json=payload, headers=self.session)
         if request.status_code == 200:
             print(request.json())
         else:
@@ -435,7 +435,7 @@ class ElasticSearchAAPCLI(object):
     def perm_del_roles(self, _id, roles):
         payload = roles.split(',')
         url = self.endpoint+'elaap/api/v1/permissions/'+_id+'/roles'
-        request = requests.delete(url, json=payload, cookies=self.session)
+        request = requests.delete(url, json=payload, headers=self.session)
         if request.status_code == 200:
             print(request.json())
         else:
@@ -449,7 +449,7 @@ class ElasticSearchAAPCLI(object):
             'users': users.split(',')
         }
         url = self.endpoint+'elaap/api/v1/roles'
-        request = requests.post(url, json=payload, cookies=self.session)
+        request = requests.post(url, json=payload, headers=self.session)
         if request.status_code == 201:
             print(request.json())
         else:
@@ -458,7 +458,7 @@ class ElasticSearchAAPCLI(object):
 
     def roles_del(self, _id):
         url = self.endpoint+'elaap/api/v1/roles/'+_id
-        request = requests.delete(url, cookies=self.session)
+        request = requests.delete(url, headers=self.session)
         if request.status_code == 200:
             print('role deleted')
         else:
@@ -467,7 +467,7 @@ class ElasticSearchAAPCLI(object):
 
     def roles_get(self, _id):
         url = self.endpoint+'elaap/api/v1/roles/'+_id
-        request = requests.get(url, cookies=self.session)
+        request = requests.get(url, headers=self.session)
         if request.status_code == 202:
             print(request.json())
         else:
@@ -481,7 +481,7 @@ class ElasticSearchAAPCLI(object):
         if users is not None:
             payload['users'] = users.split(',')
         url = self.endpoint+'elaap/api/v1/roles/'+_id
-        request = requests.put(url, json=payload, cookies=self.session)
+        request = requests.put(url, json=payload, headers=self.session)
         if request.status_code == 200:
             print(request.json())
         else:
@@ -495,14 +495,14 @@ class ElasticSearchAAPCLI(object):
         if users is not None:
             params['users'] = users
         url = self.endpoint+'elaap/api/v1/roles/_search'
-        request = requests.get(url, params=params, cookies=self.session)
+        request = requests.get(url, params=params, headers=self.session)
         for result in request.json()['results']:
             print(result)
 
     def roles_add_users(self, _id, users):
         payload = users.split(',')
         url = self.endpoint+'elaap/api/v1/roles/'+_id+'/users'
-        request = requests.put(url, json=payload, cookies=self.session)
+        request = requests.put(url, json=payload, headers=self.session)
         if request.status_code == 200:
             print(request.json())
         else:
@@ -512,7 +512,7 @@ class ElasticSearchAAPCLI(object):
     def roles_del_users(self, _id, users):
         payload = users.split(',')
         url = self.endpoint+'elaap/api/v1/roles/'+_id+'/users'
-        request = requests.delete(url, json=payload, cookies=self.session)
+        request = requests.delete(url, json=payload, headers=self.session)
         if request.status_code == 200:
             print(request.json())
         else:
@@ -528,7 +528,7 @@ class ElasticSearchAAPCLI(object):
             'password': password
         }
         url = self.endpoint+'elaap/api/v1/users'
-        request = requests.post(url, json=payload, cookies=self.session)
+        request = requests.post(url, json=payload, headers=self.session)
         if request.status_code == 201:
             print(request.json())
         else:
@@ -537,7 +537,7 @@ class ElasticSearchAAPCLI(object):
 
     def users_del(self, _id):
         url = self.endpoint+'elaap/api/v1/users/'+_id
-        request = requests.delete(url, cookies=self.session)
+        request = requests.delete(url, headers=self.session)
         if request.status_code == 200:
             print('user deleted')
         else:
@@ -546,7 +546,7 @@ class ElasticSearchAAPCLI(object):
 
     def users_get(self, _id):
         url = self.endpoint+'elaap/api/v1/users/'+_id
-        request = requests.get(url, cookies=self.session)
+        request = requests.get(url, headers=self.session)
         if request.status_code == 202:
             print(request.json())
         else:
@@ -564,7 +564,7 @@ class ElasticSearchAAPCLI(object):
         if password is not None:
             payload['password'] = password
         url = self.endpoint+'elaap/api/v1/users/'+_id
-        request = requests.put(url, json=payload, cookies=self.session)
+        request = requests.put(url, json=payload, headers=self.session)
         if request.status_code == 200:
             print(request.json())
         else:
@@ -576,6 +576,6 @@ class ElasticSearchAAPCLI(object):
         if _id is not None:
             params['_id'] = _id
         url = self.endpoint+'elaap/api/v1/users/_search'
-        request = requests.get(url, params=params, cookies=self.session)
+        request = requests.get(url, params=params, headers=self.session)
         for result in request.json()['results']:
             print(result)

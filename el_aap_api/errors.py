@@ -164,11 +164,11 @@ class LostPWErrorInProgress(AAError):
 
 
 class ResourceNotFound(ModelError):
-    def __init__(self, user_id):
+    def __init__(self, resource):
         super().__init__(
             status=404,
             code=2001,
-            msg="No resource with ID {0} found".format(user_id)
+            msg="No resource with ID {0} found".format(resource)
         )
 
 

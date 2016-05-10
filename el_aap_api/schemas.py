@@ -266,12 +266,11 @@ LOSTPW_REQUEST = {
     "type": "object",
     "additionalProperties": False,
     "required":  [
-        "email",
+        "_id",
     ],
     "properties": {
-        "email": {
-            "type": "string",
-            "format": "email"
+        "_id": {
+            "type": "string"
         }
     }
 }

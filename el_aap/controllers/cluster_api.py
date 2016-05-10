@@ -33,3 +33,29 @@ def get(m_aa, m_elproxy, dummy=None):
 def post(m_aa, m_elproxy, dummy=None):
     m_aa.require_permission(':cluster:', '')
     return m_elproxy.post()
+
+
+@app.put('/_cluster')
+@app.put('/_cluster/')
+@app.put('/_cluster/<dummy:path>')
+@app.put('/_cluster/<dummy:path>/')
+@app.put('/_nodes')
+@app.put('/_nodes/')
+@app.put('/_nodes/<dummy:path>')
+@app.put('/_nodes/<dummy:path>/')
+def put(m_aa, m_elproxy, dummy=None):
+    m_aa.require_permission(':cluster:', '')
+    return m_elproxy.put()
+
+
+@app.delete('/_cluster')
+@app.delete('/_cluster/')
+@app.delete('/_cluster/<dummy:path>')
+@app.delete('/_cluster/<dummy:path>/')
+@app.delete('/_nodes')
+@app.delete('/_nodes/')
+@app.delete('/_nodes/<dummy:path>')
+@app.delete('/_nodes/<dummy:path>/')
+def delete(m_aa, m_elproxy, dummy=None):
+    m_aa.require_permission(':cluster:', '')
+    return m_elproxy.delete()

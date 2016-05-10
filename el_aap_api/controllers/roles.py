@@ -29,10 +29,15 @@ def get(m_aa, m_roles, role):
 @app.post('/elaap/api/v1/roles')
 def create(m_aa, m_roles, m_users):
     m_aa.require_admin()
-    jsonschema.validate(request.json, ROLES_CREATE, format_checker=jsonschema.draft4_format_checker)
-    if 'users' in request.json:
-        if not m_users.check_ids(request.json['users']):
+    payload = request.json
+    jsonschema.validate(payload, ROLES_CREATE, format_checker=jsonschema.draft4_format_checker)
+    if 'users' in payload:
+        if not m_users.check_ids(payload['users']):
             raise InvalidBody("non existing users selected")
+    else:
+        payload['users'] = []
+    if 'description' not in payload:
+        payload['description'] = ''
     result = m_roles.create(request.json)
     response.status = 201
     return result

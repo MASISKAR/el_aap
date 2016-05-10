@@ -1,0 +1,1492 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "0.0.0",
+    "title": "ElasticSearch Authentication and Authorization Proxy REST API",
+    "description": "This is the ElasticSearch AA Proxy REST API documentation.\n"
+  },
+  "host": "localhost:9000",
+  "basePath": "/elaap/api/v1",
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "tags": [
+    {
+      "name": "Authenticate",
+      "description": "Authentication Related Stuff"
+    },
+    {
+      "name": "Permissions",
+      "description": "Permission Related Stuff"
+    },
+    {
+      "name": "Roles",
+      "description": "Role Related Stuff"
+    },
+    {
+      "name": "Users",
+      "description": "User Related Stuff"
+    }
+  ],
+  "paths": {
+    "/authenticate": {
+      "delete": {
+        "tags": [
+          "Authenticate"
+        ],
+        "description": "Delete current authentication token",
+        "responses": {
+          "200": {
+            "description": "Empty response on success"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Authenticate"
+        ],
+        "description": "Authenticate user and return authentication token\n",
+        "parameters": [
+          {
+            "name": "payload",
+            "in": "body",
+            "description": "Authentication credentials",
+            "schema": {
+              "$ref": "#/definitions/Authenticate:POST"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Authentication Token",
+            "schema": {
+              "$ref": "#/definitions/Authenticate:POST:result"
+            }
+          },
+          "400": {
+            "description": "One or More paramters are invalid",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "403": {
+            "description": "Invalid authentication information, or valid authentication token present",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/permissions/{permission}": {
+      "get": {
+        "tags": [
+          "Permissions"
+        ],
+        "description": "Get permission resource",
+        "parameters": [
+          {
+            "name": "permission",
+            "in": "path",
+            "description": "Permission resource id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "f",
+            "in": "query",
+            "description": "Filter Attributes that should be retuned",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permission resource",
+            "schema": {
+              "$ref": "#/definitions/Permission:GET"
+            }
+          },
+          "403": {
+            "description": "Insuffiecient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Permission not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Permissions"
+        ],
+        "description": "Update permission resource",
+        "parameters": [
+          {
+            "name": "permission",
+            "in": "path",
+            "description": "Permission resource id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "description": "JSON Document with attributes that should be updated",
+            "schema": {
+              "$ref": "#/definitions/Permission:PUT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permission Resource",
+            "schema": {
+              "$ref": "#/definitions/Permission:GET"
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Permission not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Permissions"
+        ],
+        "description": "Delete permission resource",
+        "parameters": [
+          {
+            "name": "permission",
+            "in": "path",
+            "description": "Permissions resource id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Empty response on success"
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Permission not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/permissions/{permission}/roles": {
+      "put": {
+        "tags": [
+          "Permissions"
+        ],
+        "description": "Add roles to permission resource",
+        "parameters": [
+          {
+            "name": "permission",
+            "in": "path",
+            "description": "Permissions resource id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "description": "List with roles to add",
+            "schema": {
+              "$ref": "#/definitions/Permission:MANIPULATE:roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permission resource",
+            "schema": {
+              "$ref": "#/definitions/Permission:GET"
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Permission not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Permissions"
+        ],
+        "description": "Delete users from permission resource",
+        "parameters": [
+          {
+            "name": "permission",
+            "in": "path",
+            "description": "Permission resource id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "description": "List with roles to delete",
+            "schema": {
+              "$ref": "#/definitions/Permission:MANIPULATE:roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permission resource",
+            "schema": {
+              "$ref": "#/definitions/Permission:GET"
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Permission not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/permissions/{permission}/permissions": {
+      "put": {
+        "tags": [
+          "Permissions"
+        ],
+        "description": "Add permissions to permission",
+        "parameters": [
+          {
+            "name": "permission",
+            "in": "path",
+            "description": "Permission resource id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "description": "List of permissions to add",
+            "schema": {
+              "$ref": "#/definitions/Permission:MANIPULATE:permissions"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permission resource",
+            "schema": {
+              "$ref": "#/definitions/Permission:GET"
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Permission not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Permissions"
+        ],
+        "description": "Delete permissions from permission",
+        "parameters": [
+          {
+            "name": "permission",
+            "in": "path",
+            "description": "Permission resource id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "description": "List of permissions to delete",
+            "schema": {
+              "$ref": "#/definitions/Permission:MANIPULATE:permissions"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permission resource",
+            "schema": {
+              "$ref": "#/definitions/Permission:GET"
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Permission not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/permissions/_search": {
+      "get": {
+        "tags": [
+          "Permissions"
+        ],
+        "description": "Get all matching permission resources",
+        "parameters": [
+          {
+            "name": "_id",
+            "in": "query",
+            "description": "filter: regular expression",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "description": "filter: comma seperated list of scopes",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "permissions",
+            "in": "query",
+            "description": "filter: comma seperated list if permissions",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "roles",
+            "in": "query",
+            "description": "filter: comma seperated list of roles",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "f",
+            "in": "query",
+            "description": "Filter Attributes that should be retuned",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of permission resources",
+            "schema": {
+              "$ref": "#/definitions/Permission:GETQ"
+            }
+          },
+          "403": {
+            "description": "Insuffiecient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/permissions": {
+      "post": {
+        "tags": [
+          "Permissions"
+        ],
+        "description": "Create a new permission resource",
+        "parameters": [
+          {
+            "name": "payload",
+            "in": "body",
+            "description": "The permission JSON representation you want to create",
+            "schema": {
+              "$ref": "#/definitions/Permission:POST"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created permission resource",
+            "schema": {
+              "$ref": "#/definitions/Permission:GET"
+            }
+          },
+          "400": {
+            "description": "One or More paramters are invalid",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "409": {
+            "description": "Permission with this ID already exists",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/roles/{role}": {
+      "get": {
+        "tags": [
+          "Roles"
+        ],
+        "description": "Get Role resource",
+        "parameters": [
+          {
+            "name": "role",
+            "in": "path",
+            "description": "Role resource id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "f",
+            "in": "query",
+            "description": "Filter Attributes that should be retuned",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role resource",
+            "schema": {
+              "$ref": "#/definitions/Role:GET"
+            }
+          },
+          "403": {
+            "description": "Insuffiecient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Role not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Roles"
+        ],
+        "description": "Update role resource",
+        "parameters": [
+          {
+            "name": "role",
+            "in": "path",
+            "description": "Role resource id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "description": "JSON Document with attributes that should be updated",
+            "schema": {
+              "$ref": "#/definitions/Role:PUT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role resource",
+            "schema": {
+              "$ref": "#/definitions/Role:GET"
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Role not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Roles"
+        ],
+        "description": "Delete role resource",
+        "parameters": [
+          {
+            "name": "role",
+            "in": "path",
+            "description": "Role resource ID",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Empty response on success"
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Role not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/roles/{role}/users": {
+      "put": {
+        "tags": [
+          "Roles"
+        ],
+        "description": "Add users to role resource",
+        "parameters": [
+          {
+            "name": "role",
+            "in": "path",
+            "description": "Role resource id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "description": "List of users to add",
+            "schema": {
+              "$ref": "#/definitions/Role:MANIPULATE:users"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role resource",
+            "schema": {
+              "$ref": "#/definitions/Role:GET"
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Role not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Roles"
+        ],
+        "description": "Delete users from role resource",
+        "parameters": [
+          {
+            "name": "role",
+            "in": "path",
+            "description": "Role resource id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "description": "List of users to delete",
+            "schema": {
+              "$ref": "#/definitions/Role:MANIPULATE:users"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role resource",
+            "schema": {
+              "$ref": "#/definitions/Role:GET"
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Role not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/roles/_search": {
+      "get": {
+        "tags": [
+          "Roles"
+        ],
+        "description": "Get all matching Roles",
+        "parameters": [
+          {
+            "name": "_id",
+            "in": "query",
+            "description": "filter: regular expression",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "users",
+            "in": "query",
+            "description": "filter: comma seperates list of users",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "f",
+            "in": "query",
+            "description": "Filter Attributes that should be retuned",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List with matching role resources",
+            "schema": {
+              "$ref": "#/definitions/Role:GETQ"
+            }
+          },
+          "403": {
+            "description": "Insuffiecient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/roles": {
+      "post": {
+        "tags": [
+          "Roles"
+        ],
+        "description": "Create a new role, roles must be unique",
+        "parameters": [
+          {
+            "name": "payload",
+            "in": "body",
+            "description": "The role JSON representation you want to create",
+            "schema": {
+              "$ref": "#/definitions/Role:POST"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created role resource",
+            "schema": {
+              "$ref": "#/definitions/Role:GET"
+            }
+          },
+          "400": {
+            "description": "One or More paramters are invalid",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "409": {
+            "description": "Role with this ID already exists",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/users/{user}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "description": "Get user resource",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "description": "User resource id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "f",
+            "in": "query",
+            "description": "Filter Attributes that should be retuned",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User resource",
+            "schema": {
+              "$ref": "#/definitions/User:GET"
+            }
+          },
+          "403": {
+            "description": "Insuffiecient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "description": "Update user resource",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "description": "User resource id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "description": "JSON Document with attributes that should be updated",
+            "schema": {
+              "$ref": "#/definitions/User:PUT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User resource",
+            "schema": {
+              "$ref": "#/definitions/User:GET"
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "description": "Delete existing user",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "description": "User resource id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Empty response on success"
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/users/_search": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "description": "Get all matching Users",
+        "parameters": [
+          {
+            "name": "admin",
+            "in": "query",
+            "description": "filter: boolean, if true, only return admin accounts",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "_id",
+            "in": "query",
+            "description": "filter: regular expression",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "f",
+            "in": "query",
+            "description": "Filter Attributes that should be retuned",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of matching user resources",
+            "schema": {
+              "$ref": "#/definitions/User:GETQ"
+            }
+          },
+          "403": {
+            "description": "Insuffiecient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/users/_lostpw": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "description": "quest passwort reset link",
+        "parameters": [
+          {
+            "name": "payload",
+            "in": "body",
+            "description": "passwort reset request",
+            "schema": {
+              "$ref": "#/definitions/User:LOSTPW:POST"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Always an empty response, to prevent information leaks"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "description": "reset password",
+        "parameters": [
+          {
+            "name": "payload",
+            "in": "body",
+            "description": "reset password",
+            "schema": {
+              "$ref": "#/definitions/User:LOSTPW:PUT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "empty response on success"
+          },
+          "404": {
+            "description": "retuned on expired or unkown reset tokens"
+          }
+        }
+      }
+    },
+    "/users/_self": {
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "description": "Delete user resource executing this request",
+        "parameters": [
+          {
+            "name": "f",
+            "in": "query",
+            "description": "Filter Attributes that should be retuned",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Empty response on success"
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "description": "Return user resource, of the user executing this request",
+        "responses": {
+          "200": {
+            "description": "user resource",
+            "schema": {
+              "$ref": "#/definitions/User:GET"
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "description": "Update user resource of the user executing this request",
+        "parameters": [
+          {
+            "name": "payload",
+            "in": "body",
+            "description": "The user JSON representation you want to update",
+            "schema": {
+              "$ref": "#/definitions/User:PUTSELF"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "user resource",
+            "schema": {
+              "$ref": "#/definitions/User:GET"
+            }
+          },
+          "400": {
+            "description": "One or More paramters are invalid",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "description": "Create a new user, user _id must be unique",
+        "parameters": [
+          {
+            "name": "payload",
+            "in": "body",
+            "description": "The user JSON representation you want to create",
+            "schema": {
+              "$ref": "#/definitions/User:POST"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created user resource",
+            "schema": {
+              "$ref": "#/definitions/User:GET"
+            }
+          },
+          "400": {
+            "description": "One or More paramters are invalid",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "409": {
+            "description": "User with this ID already exists",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Authenticate:POST": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "user",
+        "password"
+      ],
+      "properties": {
+        "user": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "Authenticate:POST:result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sid": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        }
+      }
+    },
+    "Permission:GET": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "scope": {
+          "type": "string"
+        }
+      }
+    },
+    "Permission:GETQ": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Permission:GET"
+          }
+        }
+      }
+    },
+    "Permission:MANIPULATE:permissions": {
+      "type": "array",
+      "additionalProperties": false,
+      "items": {
+        "type": "string"
+      }
+    },
+    "Permission:MANIPULATE:roles": {
+      "type": "array",
+      "additionalProperties": false,
+      "items": {
+        "type": "string"
+      }
+    },
+    "Permission:POST": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "_id",
+        "scope"
+      ],
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "uniqueItems": true,
+            "enum": [
+              ":",
+              ":cluster:",
+              ":cluster:monitor",
+              ":index:",
+              ":index:crud:",
+              ":index:crud:create",
+              ":index:crud:read",
+              ":index:crud:update",
+              ":index:crud:delete",
+              ":index:crud:search",
+              ":index:manage:",
+              ":index:manage:monitor"
+            ]
+          }
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "scope": {
+          "type": "string"
+        }
+      }
+    },
+    "Permission:PUT": {
+      "type": "object",
+      "additionalProperties": false,
+      "anyOf": [
+        {"required": ["description"]},
+        {"required": ["permissions"]},
+        {"required": ["roles"]},
+        {"required": ["scope"]}
+      ],
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "uniqueItems": true,
+            "enum": [
+              ":",
+              ":cluster:",
+              ":cluster:monitor",
+              ":index:",
+              ":index:crud:",
+              ":index:crud:create",
+              ":index:crud:read",
+              ":index:crud:update",
+              ":index:crud:delete",
+              ":index:crud:search",
+              ":index:manage:",
+              ":index:manage:monitor"
+            ]
+          }
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "scope": {
+          "type": "string"
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "err": {
+          "type": "string"
+        }
+      }
+    },
+    "Role:GET": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Role:GETQ": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Role:GET"
+          }
+        }
+      }
+    },
+    "Role:MANIPULATE:users": {
+      "type": "array",
+      "additionalProperties": false,
+      "items": {
+        "type": "string"
+      }
+    },
+    "Role:POST": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "_id"
+      ],
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Role:PUT": {
+      "type": "object",
+      "additionalProperties": false,
+      "anyOf": [
+        {"required": ["description"]},
+        {"required": ["users"]}
+      ],
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "User:GET": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "admin": {
+          "type": "boolean"
+        },
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "User:GETQ": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/User:GET"
+          }
+        }
+      }
+    },
+    "User:POST": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "_id",
+        "admin",
+        "email",
+        "name",
+        "password"
+      ],
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "admin": {
+          "type": "boolean"
+        },
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "User:PUT": {
+      "type": "object",
+      "additionalProperties": false,
+      "anyOf": [
+        {"required": ["admin"]},
+        {"required": ["email"]},
+        {"required": ["name"]},
+        {"required": ["password"]}
+      ],
+      "properties": {
+        "admin": {
+          "type": "boolean"
+        },
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "User:PUTSELF": {
+      "type": "object",
+      "additionalProperties": false,
+      "anyOf": [
+        {"required": ["email"]},
+        {"required": ["name"]},
+        {"required": ["password"]}
+      ],
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "User:LOSTPW:POST": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["_id"],
+      "properties": {
+        "_id": {
+          "type": "string"
+        }
+      }
+    },
+    "User:LOSTPW:PUT": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "password",
+        "token"
+      ],
+      "properties": {
+        "password": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

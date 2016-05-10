@@ -98,20 +98,6 @@ class Users(FilterMixIn, ProjectionMixIn):
         return result
 
     @method_wrapper
-    def get_user_by_email(self, email):
-        request_id = request.environ.get('REQUEST_ID', None)
-        self.log.info('{0} getting user by email {1}'.format(request_id, email))
-        result = self._coll.find_one(
-            filter={'email': email},
-            projection=self._projection('_id')
-        )
-        if result is None:
-            self.log.warning('{0} email not assigned to any user'.format(request_id, email))
-            return
-        self.log.info('{0} success getting user by email {1}'.format(request_id, email))
-        return result['_id']
-
-    @method_wrapper
     def is_admin(self, user):
         request_id = request.environ.get('REQUEST_ID', None)
         self.log.debug('{0} checking if user {1} is admin'.format(request_id, user))

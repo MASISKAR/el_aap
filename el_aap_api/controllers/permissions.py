@@ -23,10 +23,17 @@ def search(m_aa, m_permissions):
 @app.post('/elaap/api/v1/permissions')
 def create(m_aa, m_permissions, m_roles):
     m_aa.require_admin()
-    jsonschema.validate(request.json, PERMISSIONS_CREATE, format_checker=jsonschema.draft4_format_checker)
+    payload = request.json
+    jsonschema.validate(payload, PERMISSIONS_CREATE, format_checker=jsonschema.draft4_format_checker)
     if 'roles' in request.json:
         if not m_roles.check_ids(request.json['roles']):
             raise InvalidBody('some roles missing')
+    else:
+        payload['roles'] = []
+    if 'description' not in payload:
+        payload['description'] = ''
+    if 'permissions' not in payload:
+        payload['permissions'] = []
     result = m_permissions.create(request.json)
     response.status = 201
     return result

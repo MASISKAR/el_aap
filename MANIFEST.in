@@ -1,4 +1,3 @@
 include contrib/el_aap.ini
 include contrib/el_aap_api.ini
 include LICENSE.txt
-recursive-include static *
