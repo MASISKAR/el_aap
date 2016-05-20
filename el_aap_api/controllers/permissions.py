@@ -16,7 +16,10 @@ def search(m_aa, m_permissions):
         permissions=request.query.get('permissions', None),
         scope=request.query.get('scope', None),
         roles=request.query.get('roles', None),
-        fields=request.query.get('f', None)
+        fields=request.query.get('f', None),
+        sort=request.query.get('sort', None),
+        page=request.query.get('page', None),
+        limit=request.query.get('limit', None)
     )
 
 

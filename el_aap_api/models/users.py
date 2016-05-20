@@ -7,18 +7,24 @@ from passlib.hash import pbkdf2_sha512
 import pymongo
 import pymongo.errors
 
-from el_aap_api.models.mixins import FilterMixIn, ProjectionMixIn
+from el_aap_api.models.mixins import FilterMixIn, PaginationSkipMixIn, ProjectionMixIn, SortMixIn
 from el_aap_api.errors import *
 
 
-class Users(FilterMixIn, ProjectionMixIn):
+class Users(FilterMixIn, PaginationSkipMixIn, ProjectionMixIn, SortMixIn):
     def __init__(self, coll):
-        self.defaultfields = {
+        self.projection_fields = {
             '_id': 1,
             'admin': 1,
             'email': 1,
             'name': 1
         }
+        self.sort_fields = [
+            ('_id', pymongo.ASCENDING),
+            ('email', pymongo.ASCENDING),
+            ('name', pymongo.ASCENDING),
+            ('admin', pymongo.ASCENDING)
+        ]
         self._coll = coll
         self.log = logging.getLogger('el_aap')
 
@@ -120,7 +126,7 @@ class Users(FilterMixIn, ProjectionMixIn):
         self.log.debug('{0} user {1} is admin'.format(request_id, user))
 
     @method_wrapper
-    def search(self, _ids=None, admin=None, fields=None):
+    def search(self, _ids=None, admin=None, fields=None, sort=None, page=None, limit=None):
         request_id = request.environ.get('REQUEST_ID', None)
         self.log.info('{0} executing user resource search'.format(request_id))
         query = {}
@@ -130,7 +136,7 @@ class Users(FilterMixIn, ProjectionMixIn):
         for item in self._coll.find(
             filter=query,
             projection=self._projection(fields)
-        ):
+        ).sort(self._sort(sort)).skip(self._pagination_skip(page, limit)).limit(self._pagination_limit(limit)):
             result.append(item)
         self.log.info('{0} success executing user resource search, found {1} items'.format(request_id, len(result)))
         return {'results': result}

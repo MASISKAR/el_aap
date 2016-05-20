@@ -96,7 +96,7 @@
           {
             "name": "f",
             "in": "query",
-            "description": "Filter Attributes that should be retuned",
+            "description": "Filter Attributes that should be returned",
             "required": false,
             "type": "string"
           }
@@ -412,9 +412,30 @@
           {
             "name": "f",
             "in": "query",
-            "description": "Filter Attributes that should be retuned",
+            "description": "Filter Attributes that should be returned",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Comma separated list of attributes to sort result, valid values are _id and scope, prefix with - to change order",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "pagination index",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "pagination limit",
+            "required": false,
+            "type": "integer"
           }
         ],
         "responses": {
@@ -488,7 +509,7 @@
           {
             "name": "f",
             "in": "query",
-            "description": "Filter Attributes that should be retuned",
+            "description": "Filter Attributes that should be returned",
             "required": false,
             "type": "string"
           }
@@ -695,16 +716,37 @@
           {
             "name": "users",
             "in": "query",
-            "description": "filter: comma seperates list of users",
+            "description": "filter: comma separated list of users",
             "required": false,
             "type": "string"
           },
           {
             "name": "f",
             "in": "query",
-            "description": "Filter Attributes that should be retuned",
+            "description": "Filter Attributes that should be returned",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Comma separated list of attributes to sort result, valid values are _id, prefix with - to change order",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "pagination index",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "pagination limit",
+            "required": false,
+            "type": "integer"
           }
         ],
         "responses": {
@@ -778,7 +820,7 @@
           {
             "name": "f",
             "in": "query",
-            "description": "Filter Attributes that should be retuned",
+            "description": "Filter Attributes that should be returned",
             "required": false,
             "type": "string"
           }
@@ -904,9 +946,30 @@
           {
             "name": "f",
             "in": "query",
-            "description": "Filter Attributes that should be retuned",
+            "description": "Filter Attributes that should be returned",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Comma separated list of attributes to sort result, valid values are _id and scope, prefix with - to change order",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "pagination index",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "pagination limit",
+            "required": false,
+            "type": "integer"
           }
         ],
         "responses": {
@@ -967,7 +1030,7 @@
             "description": "empty response on success"
           },
           "404": {
-            "description": "retuned on expired or unkown reset tokens"
+            "description": "returned on expired or unkown reset tokens"
           }
         }
       }
@@ -982,7 +1045,7 @@
           {
             "name": "f",
             "in": "query",
-            "description": "Filter Attributes that should be retuned",
+            "description": "Filter Attributes that should be returned",
             "required": false,
             "type": "string"
           }

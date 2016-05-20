@@ -6,19 +6,23 @@ from bottle import request
 import pymongo
 import pymongo.errors
 
-from el_aap_api.models.mixins import FilterMixIn, ProjectionMixIn
+from el_aap_api.models.mixins import FilterMixIn, PaginationSkipMixIn, ProjectionMixIn, SortMixIn
 from el_aap_api.errors import *
 
 
-class Permissions(FilterMixIn, ProjectionMixIn):
+class Permissions(FilterMixIn, PaginationSkipMixIn, ProjectionMixIn, SortMixIn):
     def __init__(self, coll):
-        self.defaultfields = {
+        self.projection_fields = {
             '_id': 1,
             'description': 1,
             'permissions': 1,
             'roles': 1,
             'scope': 1
         }
+        self.sort_fields = [
+            ('_id', pymongo.ASCENDING),
+            ('scope', pymongo.ASCENDING)
+        ]
         self._coll = coll
         self.log = logging.getLogger('el_aap')
 
@@ -139,7 +143,7 @@ class Permissions(FilterMixIn, ProjectionMixIn):
         self.log.debug('{0} success removing role {1} from all permission resources'.format(request_id, role))
 
     @method_wrapper
-    def search(self, _ids=None, scope=None, permissions=None, roles=None, fields=None):
+    def search(self, _ids=None, scope=None, permissions=None, roles=None, fields=None, sort=None, page=None, limit=None):
         request_id = request.environ.get('REQUEST_ID', None)
         self.log.info('{0} executing permission resource search'.format(request_id))
         query = {}
@@ -151,7 +155,7 @@ class Permissions(FilterMixIn, ProjectionMixIn):
         for item in self._coll.find(
                 filter=query,
                 projection=self._projection(fields)
-        ):
+        ).sort(self._sort(sort)).skip(self._pagination_skip(page, limit)).limit(self._pagination_limit(limit)):
             result.append(item)
         self.log.info('{0} success executing permission resource search, found {1} items'.format(request_id, len(result)))
         return {'results': result}

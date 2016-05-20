@@ -18,9 +18,12 @@ from el_aap_api.schemas import *
 def search(m_aa, m_users):
     m_aa.require_admin()
     return m_users.search(
-            _ids=request.query.get('_id', None),
-            admin=request.query.get('admin', None),
-            fields=request.query.get('f', None)
+        _ids=request.query.get('_id', None),
+        admin=request.query.get('admin', None),
+        fields=request.query.get('f', None),
+        sort=request.query.get('sort', None),
+        page=request.query.get('page', None),
+        limit=request.query.get('limit', None)
     )
 
 

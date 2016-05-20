@@ -15,7 +15,9 @@ __all__ = [
     'DuplicateResource',
     'InvalidBody',
     'InvalidFields',
+    'InvalidPaginationLimit',
     'InvalidSelectors',
+    'InvalidSortCriteria',
     'LostPWErrorInProgress',
     'LostPWRecoveryDisabledError',
     'ModelError',
@@ -205,6 +207,24 @@ class InvalidSelectors(ValidationError):
             status=400,
             code=3004,
             msg="Invalid selection: {0}".format(err)
+        )
+
+
+class InvalidPaginationLimit(ValidationError):
+    def __init__(self, err):
+        super().__init__(
+            status=400,
+            code=3005,
+            msg="Invalid pagination limit, has to be one of: {0}".format(err)
+        )
+
+
+class InvalidSortCriteria(ValidationError):
+    def __init__(self, err):
+        super().__init__(
+            status=400,
+            code=3005,
+            msg="Invalid sort criteria: {0}".format(err)
         )
 
 

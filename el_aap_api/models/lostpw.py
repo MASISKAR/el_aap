@@ -14,7 +14,7 @@ from el_aap_api.errors import *
 
 class LostPW(FilterMixIn, ProjectionMixIn):
     def __init__(self, coll):
-        self.defaultfields = {
+        self.projection_fields = {
             '_id': 1,
         }
         self._coll = coll
